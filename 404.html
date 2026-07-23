@@ -1,0 +1,192 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>404 - 页面不存在</title>
+
+  <style>
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      min-height: 100vh;
+      font-family: Arial, "Microsoft YaHei", sans-serif;
+      background: linear-gradient(135deg, #667eea, #764ba2);
+      color: #fff;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .container {
+      width: 100%;
+      max-width: 760px;
+      padding: 40px 20px;
+      text-align: center;
+    }
+
+    .card {
+      background: rgba(255, 255, 255, 0.12);
+      backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
+      border-radius: 24px;
+      padding: 48px 32px;
+      box-shadow: 0 20px 50px rgba(0, 0, 0, 0.25);
+      border: 1px solid rgba(255, 255, 255, 0.2);
+    }
+
+    .code {
+      font-size: 120px;
+      line-height: 1;
+      font-weight: 900;
+      letter-spacing: 6px;
+      margin-bottom: 12px;
+      text-shadow: 0 8px 20px rgba(0, 0, 0, 0.25);
+    }
+
+    h1 {
+      margin: 0 0 16px;
+      font-size: 32px;
+    }
+
+    p {
+      margin: 8px 0;
+      font-size: 16px;
+      line-height: 1.8;
+      color: rgba(255, 255, 255, 0.88);
+    }
+
+    .url {
+      margin: 20px auto;
+      padding: 12px 16px;
+      max-width: 100%;
+      overflow-wrap: break-word;
+      border-radius: 12px;
+      background: rgba(0, 0, 0, 0.18);
+      font-family: Consolas, Monaco, monospace;
+      font-size: 14px;
+      color: #f6f6f6;
+    }
+
+    .actions {
+      margin-top: 30px;
+      display: flex;
+      gap: 14px;
+      justify-content: center;
+      flex-wrap: wrap;
+    }
+
+    .btn {
+      display: inline-block;
+      padding: 13px 24px;
+      border-radius: 999px;
+      text-decoration: none;
+      font-size: 15px;
+      transition: 0.2s ease;
+      cursor: pointer;
+      border: none;
+    }
+
+    .btn-primary {
+      background: #fff;
+      color: #5f4bdb;
+      font-weight: bold;
+    }
+
+    .btn-primary:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 8px 20px rgba(255, 255, 255, 0.25);
+    }
+
+    .btn-secondary {
+      background: rgba(255, 255, 255, 0.16);
+      color: #fff;
+      border: 1px solid rgba(255, 255, 255, 0.35);
+    }
+
+    .btn-secondary:hover {
+      background: rgba(255, 255, 255, 0.25);
+      transform: translateY(-2px);
+    }
+
+    .footer {
+      margin-top: 24px;
+      font-size: 13px;
+      color: rgba(255, 255, 255, 0.7);
+    }
+
+    @media (max-width: 600px) {
+      .card {
+        padding: 40px 22px;
+      }
+
+      .code {
+        font-size: 82px;
+        letter-spacing: 3px;
+      }
+
+      h1 {
+        font-size: 24px;
+      }
+
+      p {
+        font-size: 15px;
+      }
+
+      .actions {
+        flex-direction: column;
+      }
+
+      .btn {
+        width: 100%;
+      }
+    }
+  </style>
+</head>
+
+<body>
+  <main class="container">
+    <section class="card">
+      <div class="code">404</div>
+
+      <h1>页面不存在</h1>
+
+      <p>抱歉，你访问的页面可能已经被删除、移动，或者地址输入有误。</p>
+      <p>你可以返回首页，或者回到上一页继续浏览。</p>
+
+      <div class="url" id="currentUrl"></div>
+
+      <div class="actions">
+        <a class="btn btn-primary" href="/">返回首页</a>
+        <button class="btn btn-secondary" onclick="history.back()">返回上一页</button>
+      </div>
+
+      <div class="footer">
+        <span id="countdown">10</span> 秒后自动返回首页
+      </div>
+    </section>
+  </main>
+
+  <script>
+    // 显示当前访问的错误地址
+    document.getElementById("currentUrl").textContent = window.location.href;
+
+    // 10 秒后自动跳转首页
+    let seconds = 10;
+    const countdownEl = document.getElementById("countdown");
+
+    const timer = setInterval(function () {
+      seconds--;
+      countdownEl.textContent = seconds;
+
+      if (seconds <= 0) {
+        clearInterval(timer);
+        window.location.href = "/";
+      }
+    }, 1000);
+  </script>
+</body>
+</html>
