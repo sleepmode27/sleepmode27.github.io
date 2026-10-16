@@ -1,0 +1,24 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>{{title}}</title>
+  <meta name="description" content="{{description}}" />
+  <link rel="stylesheet" href="/style.css" />
+</head>
+<body>
+  <div class="page">
+    <header class="site-header">
+      <a class="site-title" href="/">{{site_title}}</a>
+      <nav>
+        <a href="/"{{home_current}}>首页</a>
+        <a href="/blog/"{{blog_current}}>文章</a>
+      </nav>
+    </header>
+    <main>
+{{content}}
+    </main>
+  </div>
+</body>
+</html>
