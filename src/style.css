@@ -13,6 +13,7 @@
 body {
   margin: 0;
   min-height: 100vh;
+  overflow-x: hidden;
   background: #fff;
   color: var(--text);
   font-family: "Iowan Old Style", Palatino, "Hiragino Mincho ProN", "Yu Mincho",
@@ -44,35 +45,32 @@ a:focus-visible {
   justify-content: space-between;
   align-items: center;
   gap: 2rem;
-  margin: 0 -2.5rem 5rem;
+  margin: 0 -2.5rem 0;
   padding: 1.15rem 2.5rem;
-  background: rgba(255, 255, 255, 0.92);
-  backdrop-filter: blur(10px);
+  background: #fff;
 }
 
-.site-title {
-  font-size: 0.95rem;
+.site-title,
+nav a {
+  font-size: 14px;
   font-weight: 400;
-  letter-spacing: 0.04em;
+  letter-spacing: 1.7px;
   text-decoration: none;
 }
 
 nav {
   display: flex;
   flex-wrap: wrap;
-  gap: 0.8rem 1.6rem;
+  justify-content: flex-end;
+  gap: 0.35rem 1.15rem;
 }
 
 nav a {
   color: var(--text);
-  font-size: 0.82rem;
-  letter-spacing: 0.14em;
-  text-decoration: none;
   transition: opacity 0.25s ease;
 }
 
-nav a:hover,
-nav a[aria-current="page"] {
+nav a:hover {
   opacity: 0.4;
 }
 
@@ -93,11 +91,8 @@ h1 {
 }
 
 .still {
-  margin: 4.5rem 0 3.2rem;
-}
-
-.stage > .still:first-child {
-  margin-top: -2.4rem;
+  width: 100vw;
+  margin: 0 0 3.2rem calc(50% - 50vw);
 }
 
 .still img {
@@ -107,7 +102,9 @@ h1 {
 }
 
 .still figcaption {
-  margin-top: 0.55rem;
+  width: min(76rem, 100%);
+  margin: 0.55rem auto 0;
+  padding: 0 2.5rem;
   color: var(--muted);
   font-size: 0.75rem;
   letter-spacing: 0.14em;
@@ -304,14 +301,17 @@ article .lede {
     align-items: flex-start;
     flex-direction: column;
     gap: 0.8rem;
-    margin-right: -1.25rem;
-    margin-left: -1.25rem;
-    margin-bottom: 3rem;
+    margin: 0 -1.25rem 0;
     padding: 1rem 1.25rem;
   }
 
   nav {
-    gap: 1.1rem;
+    justify-content: flex-start;
+    gap: 0.7rem 1rem;
+  }
+
+  .still figcaption {
+    padding: 0 1.25rem;
   }
 
   h1 {

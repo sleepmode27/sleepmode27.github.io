@@ -445,7 +445,6 @@ def build():
         + "<section>\n<h2>文章</h2>\n"
         + f"{articles}\n</section>\n"
         + f"{catalog_section('视频', videos)}"
-        + still("/images/forest.jpg", "雾里的针叶树", "针叶")
         + f"{catalog_section('音乐', music)}"
         + f"{catalog_section('works', works)}"
     )
