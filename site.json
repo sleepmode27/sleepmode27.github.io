@@ -6,6 +6,11 @@
       "name": "三甲医院名录",
       "description": "按省份查看三级甲等医院，并对照复旦大学医院管理研究所 2023 年度榜单。",
       "href": "/projects/hospitals-rank/"
+    },
+    {
+      "name": "视听",
+      "description": "收着的音乐和视频。视频放在哔哩哔哩，从这里播放。",
+      "href": "/projects/media/"
     }
   ]
 }
