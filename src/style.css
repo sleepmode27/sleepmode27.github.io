@@ -61,8 +61,8 @@ a:focus-visible {
   mix-blend-mode: difference;
 }
 
-.site-title,
-nav a {
+.site-header .site-title,
+.site-header nav a {
   color: #fff;
   -webkit-text-fill-color: #fff;
   -webkit-text-stroke: 0;
@@ -72,7 +72,7 @@ nav a {
   text-decoration: none;
 }
 
-nav {
+.site-header nav {
   display: flex;
   flex-wrap: wrap;
   justify-content: flex-end;
@@ -180,11 +180,14 @@ h1 {
 }
 
 .pager a {
+  color: var(--text);
+  -webkit-text-fill-color: currentColor;
   text-decoration: none;
 }
 
 .pager a[aria-current="page"] {
-  opacity: 0.4;
+  color: var(--muted);
+  opacity: 1;
 }
 
 h2 {
@@ -412,7 +415,7 @@ article .lede {
     padding: 0 1.25rem;
   }
 
-  nav {
+  .site-header nav {
     justify-content: flex-start;
   }
 
