@@ -288,6 +288,27 @@ def photo_card(photo):
     )
 
 
+def photo_list(photos):
+    if not photos:
+        return '<p class="empty">还没有照片。</p>'
+    items = []
+    for index, photo in enumerate(photos):
+        tags = []
+        if photo["place"]:
+            tags.append({"name": "拍摄地", "value": photo["place"]})
+        if photo["date"]:
+            tags.append({"name": "拍摄时间", "value": photo["date"]})
+        href = photo_page_href(index // PHOTO_PAGE_SIZE + 1)
+        items.append(
+            "<li>"
+            f'<a class="entry" href="{html.escape(href)}">{html.escape(photo["name"])}</a>'
+            f'<p class="summary">{html.escape(photo["summary"])}</p>'
+            f"{pair_tags(tags)}"
+            "</li>"
+        )
+    return '<ul class="list">\n' + "\n".join(items) + "\n</ul>"
+
+
 def photo_page_href(number):
     if number == 1:
         return "/photography/"
@@ -313,7 +334,8 @@ def photography_page(photos, page, pages):
         return "<h1>摄影</h1>\n" + '<p class="empty">还没有照片。</p>'
     start = (page - 1) * PHOTO_PAGE_SIZE
     cards = "\n".join(photo_card(photo) for photo in photos[start : start + PHOTO_PAGE_SIZE])
-    return f"<h1>摄影</h1>\n<div class=\"gallery\">\n{cards}\n</div>\n{photo_pager(page, pages)}"
+    pager = photo_pager(page, pages)
+    return f"<h1>摄影</h1>\n{pager}<div class=\"gallery\">\n{cards}\n</div>\n{pager}"
 
 
 def projects_list(site):
@@ -545,7 +567,7 @@ def build():
     articles = post_list(posts)
     videos = media_list(site["videos"]) if site["videos"] else '<p class="empty">还没有视频。</p>'
     music = media_list(site["music"]) if site["music"] else '<p class="empty">还没有收入音乐。</p>'
-    works = projects_list(site)
+    photos = site["photos"]
     home = (
         still("/images/sea.jpg", "雾中平静的海面", "海雾")
         + f"<h1>{html.escape(site['title'])}</h1>\n"
@@ -554,9 +576,8 @@ def build():
         + f"{articles}\n</section>\n"
         + f"{catalog_section('视频', videos)}"
         + f"{catalog_section('音乐', music)}"
-        + f"{catalog_section('works', works)}"
+        + f"{catalog_section('摄影', photo_list(photos))}"
     )
-    photos = site["photos"]
     page_count = max(1, (len(photos) + PHOTO_PAGE_SIZE - 1) // PHOTO_PAGE_SIZE)
     write_page("index.html", render_page(site, site["title"], home, "home"))
     for page in range(1, page_count + 1):
@@ -568,7 +589,6 @@ def build():
     write_page("blog/index.html", render_page(site, "文章", f"<h1>文章</h1>\n{articles}", "blog"))
     write_page("videos/index.html", render_page(site, "视频", f"<h1>视频</h1>\n{videos}", "videos"))
     write_page("music/index.html", render_page(site, "音乐", f"<h1>音乐</h1>\n{music}", "music"))
-    write_page("works/index.html", render_page(site, "works", f"<h1>works</h1>\n{works}", "works"))
 
     for entry in site["videos"]:
         write_page(

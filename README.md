@@ -1,6 +1,6 @@
 # sleepmode27.github.io
 
-个人博客首页。导航是 photography、video、music、articles。works 不在导航里，出现在首页和 `/works/`。
+个人博客首页。导航是 photography、video、music、articles。首页依次列出文章、视频、音乐和摄影。
 
 文章放在 `content/posts`。摄影、视频和音乐写在 `site.json`。其他网页项目挂到 `projects/<name>`，发布后从对应 URL 直接访问。
 
@@ -53,7 +53,7 @@ tags: 随笔, 记录
 
 `name`、`src`、`summary` 必填。`src` 写成 `/images/<文件名>`，文件要真实存在。`place` 和 `date` 可以省略。`date` 用 `YYYY` 或 `YYYY-MM-DD`；没有可靠的拍摄时间就留空，页面上不会出现「拍摄时间」。
 
-摄影页每页 6 张。第一页是 `/photography/`，之后是 `/photography/page/2/`。不足 6 张时不显示分页。首页顶部的大图仍是 `/images/sea.jpg`，换这张文件就会换掉首页。
+摄影页每页 6 张，分页在标题下面和画廊下面各有一处。第一页是 `/photography/`，之后是 `/photography/page/2/`。不足 6 张时不显示分页。首页的摄影栏目用和视频、音乐一样的列表，点名字进入对应的那一页。首页顶部的大图仍是 `/images/sea.jpg`，换这张文件就会换掉首页。
 
 ## 增加一个视频
 
@@ -110,7 +110,7 @@ git submodule add https://github.com/sleepmode27/<repo>.git projects/<name>
 }
 ```
 
-发布后从 `https://sleepmode27.github.io/projects/<name>/` 访问，并出现在首页和 `/works/`。
+发布后从 `https://sleepmode27.github.io/projects/<name>/` 访问。首页不再单列 works。
 
 子项目更新后，在本仓库更新指针再推送：
 
