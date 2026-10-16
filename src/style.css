@@ -92,6 +92,27 @@ h1 {
   line-height: 1.9;
 }
 
+.still {
+  margin: 4.5rem 0 3.2rem;
+}
+
+.stage > .still:first-child {
+  margin-top: -2.4rem;
+}
+
+.still img {
+  display: block;
+  width: 100%;
+  height: auto;
+}
+
+.still figcaption {
+  margin-top: 0.55rem;
+  color: var(--muted);
+  font-size: 0.75rem;
+  letter-spacing: 0.14em;
+}
+
 h2 {
   margin: 0 0 0.4rem;
   font-size: 0.75rem;
@@ -154,21 +175,42 @@ article time {
 .tags {
   display: flex;
   flex-wrap: wrap;
-  gap: 0.35rem 1.15rem;
+  align-items: center;
   margin: 0.7rem 0 0;
   padding: 0;
   list-style: none;
 }
 
 .tag {
+  display: inline-flex;
+  align-items: center;
   color: var(--muted);
   font-size: 0.75rem;
   letter-spacing: 0.08em;
 }
 
+.tag + .tag {
+  margin-left: 0.85rem;
+  padding-left: 0.85rem;
+  border-left: 1px solid #b5b5b5;
+}
+
 .tag-name {
   margin-right: 0.4rem;
   letter-spacing: 0.14em;
+}
+
+.player {
+  width: 100%;
+  margin-bottom: 0.9rem;
+  aspect-ratio: 16 / 9;
+  background: #111;
+}
+
+.player iframe {
+  width: 100%;
+  height: 100%;
+  border: 0;
 }
 
 .catalog {
@@ -182,20 +224,6 @@ article time {
 article .lede {
   margin-top: 1.1rem;
   margin-bottom: 2rem;
-}
-
-h1 a.watch {
-  color: inherit;
-  text-decoration: none;
-  transition: opacity 0.25s ease;
-}
-
-h1 a.watch:hover {
-  opacity: 0.4;
-}
-
-h1 a.watch::after {
-  content: " →";
 }
 
 .content h2,

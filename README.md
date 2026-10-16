@@ -2,6 +2,8 @@
 
 个人博客首页。文章放在 `content/posts`，其他静态网页项目挂到 `projects/<name>`，发布后从对应 URL 直接访问。
 
+首页暂时用了两张 CC0 照片，放在 `src/images/`。换掉同名文件即可。
+
 站点由 GitHub Actions 构建。仓库需要公开，Pages 的构建来源选择 GitHub Actions。
 
 ## 新增一篇文章
@@ -31,7 +33,7 @@ tags: 随笔, 记录
 
 `site.json` 里分开写 `videos`、`music` 和 `projects`。
 
-视频页只放标题、简介和标签，不嵌入播放器。标题在详情页链到外部观看地址。
+视频列表只放标题、简介和标签。点进详情后才出现播放器，标题是纯文字。
 
 ```json
 {

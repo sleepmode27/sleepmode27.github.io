@@ -25,6 +25,7 @@ SLUG = re.compile(r"^[A-Za-z0-9][A-Za-z0-9_-]*$")
 DATE = re.compile(r"^\d{4}-\d{2}-\d{2}$")
 PLACEHOLDER = re.compile(r"\{\{([a-z_]+)\}\}")
 PROJECT_HREF = re.compile(r"^/projects/([A-Za-z0-9][A-Za-z0-9_-]*)/$")
+BVID = re.compile(r"BV[0-9A-Za-z]+")
 
 
 def fail(message):
@@ -219,6 +220,15 @@ def catalog_section(title, body):
     return f'<section class="catalog">\n<h2>{html.escape(title)}</h2>\n{body}\n</section>\n'
 
 
+def still(src, alt, caption):
+    return (
+        '<figure class="still">\n'
+        f'<img src="{html.escape(src)}" alt="{html.escape(alt)}">\n'
+        f"<figcaption>{html.escape(caption)}</figcaption>\n"
+        "</figure>\n"
+    )
+
+
 def projects_list(site):
     projects = site["projects"]
     if not projects:
@@ -237,13 +247,28 @@ def projects_list(site):
     return '<ul class="list">\n' + "\n".join(items) + "\n</ul>"
 
 
-def media_page(entry):
+def video_player(entry):
+    matched = BVID.search(entry["link"] or "")
+    if not matched:
+        return ""
+    src = (
+        "https://player.bilibili.com/player.html"
+        f"?bvid={matched.group(0)}&high_quality=1&autoplay=0"
+    )
     title = html.escape(entry["name"])
-    if entry["link"]:
-        title = f'<a class="watch" href="{html.escape(entry["link"])}">{title}</a>'
+    return (
+        '<div class="player">'
+        f'<iframe src="{html.escape(src)}" title="{title}" allowfullscreen></iframe>'
+        "</div>"
+    )
+
+
+def media_page(entry, kind):
+    player = video_player(entry) if kind == "videos" else ""
     return (
         '<article class="piece">\n'
-        f"<h1>{title}</h1>\n"
+        f"{player}\n"
+        f"<h1>{html.escape(entry['name'])}</h1>\n"
         f"{pair_tags(entry['tags'])}\n"
         f'<p class="lede">{html.escape(entry["summary"])}</p>\n'
         "</article>"
@@ -414,13 +439,15 @@ def build():
     music = media_list(site["music"]) if site["music"] else '<p class="empty">还没有收入音乐。</p>'
     works = projects_list(site)
     home = (
-        f"<h1>{html.escape(site['title'])}</h1>\n"
-        f"<p class=\"lede\">{html.escape(site['description'])}</p>\n"
-        "<section>\n<h2>文章</h2>\n"
-        f"{articles}\n</section>\n"
-        f"{catalog_section('视频', videos)}"
-        f"{catalog_section('音乐', music)}"
-        f"{catalog_section('works', works)}"
+        still("/images/sea.jpg", "雾中平静的海面", "海雾")
+        + f"<h1>{html.escape(site['title'])}</h1>\n"
+        + f"<p class=\"lede\">{html.escape(site['description'])}</p>\n"
+        + "<section>\n<h2>文章</h2>\n"
+        + f"{articles}\n</section>\n"
+        + f"{catalog_section('视频', videos)}"
+        + still("/images/forest.jpg", "雾里的针叶树", "针叶")
+        + f"{catalog_section('音乐', music)}"
+        + f"{catalog_section('works', works)}"
     )
     write_page("index.html", render_page(site, site["title"], home, "home"))
     write_page("blog/index.html", render_page(site, "文章", f"<h1>文章</h1>\n{articles}", "blog"))
@@ -431,12 +458,12 @@ def build():
     for entry in site["videos"]:
         write_page(
             f"videos/{entry['slug']}/index.html",
-            render_page(site, entry["name"], media_page(entry), "videos"),
+            render_page(site, entry["name"], media_page(entry, "videos"), "videos"),
         )
     for entry in site["music"]:
         write_page(
             f"music/{entry['slug']}/index.html",
-            render_page(site, entry["name"], media_page(entry), "music"),
+            render_page(site, entry["name"], media_page(entry, "music"), "music"),
         )
 
     for post in posts:
@@ -461,6 +488,9 @@ def build():
     )
     write_page("404.html", render_page(site, "页面不存在", missing, ""))
     shutil.copyfile(SRC / "style.css", DIST / "style.css")
+    images = SRC / "images"
+    if images.is_dir():
+        shutil.copytree(images, DIST / "images")
     (DIST / ".nojekyll").write_text("", encoding="utf-8")
     copy_projects(site)
 
