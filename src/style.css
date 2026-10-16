@@ -61,7 +61,7 @@ article {
   align-items: flex-start;
   gap: 2rem;
   margin: 0;
-  padding: 0 3%;
+  padding: 0 max(2.5rem, calc((100% - 76rem) / 2 + 2.5rem));
   background: transparent;
   mix-blend-mode: difference;
 }
