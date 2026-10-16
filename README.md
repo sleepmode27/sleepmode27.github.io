@@ -1,10 +1,18 @@
 # sleepmode27.github.io
 
-个人博客首页。文章放在 `content/posts`，其他静态网页项目挂到 `projects/<name>`，发布后从对应 URL 直接访问。
+个人博客首页。导航是 photography、video、music、articles。works 不在导航里，出现在首页和 `/works/`。
 
-首页暂时用了 CC0 照片，文件在 `src/images/`。摄影页从 `site.json` 的 `photos` 读取，每页 6 张。换图时改同名文件，或按同样的字段再加一条。
+文章放在 `content/posts`。摄影、视频和音乐写在 `site.json`。其他网页项目挂到 `projects/<name>`，发布后从对应 URL 直接访问。
 
-站点由 GitHub Actions 构建。仓库需要公开，Pages 的构建来源选择 GitHub Actions。
+站点由 GitHub Actions 构建。仓库需要公开，Pages 的构建来源选择 GitHub Actions。改完后提交并推送到 `main`，Actions 会重新发布。
+
+本地预览：
+
+```bash
+pip install markdown
+python3 scripts/build.py
+python3 -m http.server -d dist
+```
 
 ## 新增一篇文章
 
@@ -27,13 +35,29 @@ tags: 随笔, 记录
 正文。
 ```
 
-`title`、`date`、`summary` 都要写。`date` 使用 `YYYY-MM-DD`。`tags` 用逗号分隔，列表和文章页都会显示简介和这些标签。提交并推送到 `main` 后，Actions 会重新发布。
+`title`、`date`、`summary` 都要写。`date` 使用 `YYYY-MM-DD`。`tags` 用逗号分隔，可以不写。列表和文章页都会显示简介；写了标签也会显示。
 
-## 视频、音乐和 works
+## 增加一张照片
 
-`site.json` 里分开写 `videos`、`music` 和 `projects`。
+把图片放进 `src/images/`，再在 `site.json` 的 `photos` 里加一条：
 
-视频列表只放标题、简介和标签。点进详情后才出现播放器，标题是纯文字。
+```json
+{
+  "name": "海雾",
+  "src": "/images/sea.jpg",
+  "place": "海上",
+  "date": "",
+  "summary": "雾把天和海接在一起，只剩一层浅色的水面。"
+}
+```
+
+`name`、`src`、`summary` 必填。`src` 写成 `/images/<文件名>`，文件要真实存在。`place` 和 `date` 可以省略。`date` 用 `YYYY` 或 `YYYY-MM-DD`；没有可靠的拍摄时间就留空，页面上不会出现「拍摄时间」。
+
+摄影页每页 6 张。第一页是 `/photography/`，之后是 `/photography/page/2/`。不足 6 张时不显示分页。首页顶部的大图仍是 `/images/sea.jpg`，换这张文件就会换掉首页。
+
+## 增加一个视频
+
+在 `site.json` 的 `videos` 里加一条。`watch` 填哔哩哔哩视频地址。
 
 ```json
 {
@@ -48,26 +72,25 @@ tags: 随笔, 记录
 }
 ```
 
-地址是 `/videos/guang/`。音乐用同样的字段，外链键名是 `listen`，地址在 `/music/<slug>/`。`projects` 出现在 `/works/`，用来放开发项目。
+`slug` 用英文和数字，地址是 `/videos/guang/`。列表和首页只显示标题、简介和标签。点进详情后，标题上方才出现播放器，标题本身是纯文字。
 
-## 以后把文章拆成独立仓库
+## 增加一首音乐
 
-新仓库的根目录保持 `posts/` 这一层。在本仓库执行：
+在 `site.json` 的 `music` 里加一条。`listen` 填 Apple Music 的公开地址，主机必须是 `music.apple.com`。
 
-```bash
-git submodule add https://github.com/sleepmode27/blog-posts.git content
+```json
+{
+  "slug": "guang",
+  "name": "光",
+  "summary": "一段简介",
+  "listen": "https://music.apple.com/jp/album/%E5%85%89-feat-cantus/1512512531?i=1512512551",
+  "tags": [
+    {"name": "musician", "value": "haruka nakamura"}
+  ]
+}
 ```
 
-构建脚本仍然读取 `content/posts`，文章地址不用改。子仓库使用 HTTPS 地址，Actions 才能拉取公开仓库。
-
-文章仓库更新后，在本仓库更新指针再推送，站点才会变：
-
-```bash
-git submodule update --remote content
-git add content
-git commit -m "update posts"
-git push
-```
+地址是 `/music/guang/`。列表和首页同样只显示标题、简介和标签。详情页把主机换成 `embed.music.apple.com`，嵌入官方播放器。未订阅的听众听到的是试听。
 
 ## 挂载一个网页子项目
 
@@ -87,7 +110,7 @@ git submodule add https://github.com/sleepmode27/<repo>.git projects/<name>
 }
 ```
 
-发布后从 `https://sleepmode27.github.io/projects/<name>/` 访问。
+发布后从 `https://sleepmode27.github.io/projects/<name>/` 访问，并出现在首页和 `/works/`。
 
 子项目更新后，在本仓库更新指针再推送：
 
@@ -98,10 +121,21 @@ git commit -m "update <name>"
 git push
 ```
 
-本地预览：
+## 以后把文章拆成独立仓库
+
+新仓库的根目录保持 `posts/` 这一层。在本仓库执行：
 
 ```bash
-pip install markdown
-python3 scripts/build.py
-python3 -m http.server -d dist
+git submodule add https://github.com/sleepmode27/blog-posts.git content
+```
+
+构建脚本仍然读取 `content/posts`，文章地址不用改。子仓库使用 HTTPS 地址，Actions 才能拉取公开仓库。
+
+文章仓库更新后，在本仓库更新指针再推送，站点才会变：
+
+```bash
+git submodule update --remote content
+git add content
+git commit -m "update posts"
+git push
 ```

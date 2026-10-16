@@ -21,7 +21,19 @@
       ]
     }
   ],
-  "music": [],
+  "music": [
+    {
+      "slug": "guang",
+      "name": "光",
+      "summary": "haruka nakamura 与合唱团 CANTUS 的录音，收在《音楽のある風景》。",
+      "listen": "https://music.apple.com/jp/album/%E5%85%89-feat-cantus/1512512531?i=1512512551",
+      "tags": [
+        {"name": "musician", "value": "haruka nakamura"},
+        {"name": "流派", "value": "现代古典"},
+        {"name": "ensemble", "value": "CANTUS"}
+      ]
+    }
+  ],
   "photos": [
     {
       "name": "海雾",
@@ -36,6 +48,41 @@
       "place": "林中",
       "date": "2016",
       "summary": "雾停在针叶之间，远处的树几乎看不见。"
+    },
+    {
+      "name": "港雾",
+      "src": "/images/shore-fog.jpg",
+      "place": "港边",
+      "date": "2010-08-05",
+      "summary": "雾压在对岸的山上，码头只剩一条浅色的边。"
+    },
+    {
+      "name": "林雾",
+      "src": "/images/woods-fog.jpg",
+      "place": "林中",
+      "date": "2025-06-23",
+      "summary": "树冠沉在雾里，只剩下近处的叶子是清楚的。"
+    },
+    {
+      "name": "白崖",
+      "src": "/images/cliff-fog.jpg",
+      "place": "岸上",
+      "date": "2018-10-02",
+      "summary": "雾把崖壁和水面连成同一层浅色。"
+    },
+    {
+      "name": "谷雾",
+      "src": "/images/valley-fog.jpg",
+      "place": "谷上",
+      "date": "2016-12-27",
+      "summary": "雾铺在林子中间，远处的山几乎看不见。"
+    },
+    {
+      "name": "远帆",
+      "src": "/images/tide.jpg",
+      "place": "海上",
+      "date": "2017-01-09",
+      "summary": "海面一直延伸进雾里，只剩一艘很小的帆船。"
     }
   ]
 }

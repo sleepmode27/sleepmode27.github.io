@@ -26,6 +26,7 @@ DATE = re.compile(r"^\d{4}-\d{2}-\d{2}$")
 PLACEHOLDER = re.compile(r"\{\{([a-z_]+)\}\}")
 PROJECT_HREF = re.compile(r"^/projects/([A-Za-z0-9][A-Za-z0-9_-]*)/$")
 BVID = re.compile(r"BV[0-9A-Za-z]+")
+APPLE_MUSIC = re.compile(r"^https://music\.apple\.com(/[a-z]{2}/[A-Za-z0-9%._~:/?#\[\]@!$&'()*+,;=-]+)$")
 PHOTO_SRC = re.compile(r"^/images/[A-Za-z0-9][A-Za-z0-9._-]*$")
 PHOTO_DATE = re.compile(r"^\d{4}(-\d{2}-\d{2})?$")
 PHOTO_PAGE_SIZE = 6
@@ -118,7 +119,7 @@ def load_site():
         if not PROJECT_HREF.match(project["href"]):
             fail(f"项目链接需要是 /projects/<name>/ ：{project['href']}")
     site["videos"] = load_media(site.get("videos") or [], "videos", "watch", required_link=True)
-    site["music"] = load_media(site.get("music") or [], "music", "listen", required_link=False)
+    site["music"] = load_media(site.get("music") or [], "music", "listen", required_link=True)
     site["photos"] = load_photos(site.get("photos") or [])
     return site
 
@@ -175,6 +176,8 @@ def load_media(raw, key, link_key, required_link):
             fail(f"{key} 条目缺少 {link_key}")
         if link and not link.startswith(("https://", "http://")):
             fail(f"{key} 的链接需要是 http(s)：{link}")
+        if key == "music" and link and not APPLE_MUSIC.match(link):
+            fail(f"音乐的 listen 需要是 https://music.apple.com/ 地址：{link}")
         tags = item.get("tags") or []
         if not isinstance(tags, list):
             fail(f"{key} 的 tags 需要是数组")
@@ -347,8 +350,30 @@ def video_player(entry):
     )
 
 
+def music_player(entry):
+    matched = APPLE_MUSIC.match(entry["link"] or "")
+    if not matched:
+        return ""
+    src = "https://embed.music.apple.com" + matched.group(1)
+    title = html.escape(entry["name"])
+    return (
+        '<div class="player player-audio">'
+        f'<iframe src="{html.escape(src)}" title="{title}" '
+        'allow="autoplay *; encrypted-media *; fullscreen *" '
+        'sandbox="allow-forms allow-popups allow-same-origin allow-scripts '
+        'allow-storage-access-by-user-activation allow-top-navigation-by-user-activation">'
+        "</iframe>"
+        "</div>"
+    )
+
+
 def media_page(entry, kind):
-    player = video_player(entry) if kind == "videos" else ""
+    if kind == "videos":
+        player = video_player(entry)
+    elif kind == "music":
+        player = music_player(entry)
+    else:
+        player = ""
     return (
         '<article class="piece">\n'
         f"{player}\n"

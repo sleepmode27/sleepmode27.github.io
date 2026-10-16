@@ -283,6 +283,13 @@ article time {
   border: 0;
 }
 
+.player-audio {
+  height: 175px;
+  max-width: 42rem;
+  aspect-ratio: auto;
+  background: transparent;
+}
+
 .catalog {
   margin-top: 4.5rem;
 }
