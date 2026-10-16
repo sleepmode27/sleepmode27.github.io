@@ -169,25 +169,23 @@ h1 {
 .pager {
   display: flex;
   flex-wrap: wrap;
+  justify-content: flex-end;
   gap: 0.4rem 1.15rem;
-  margin: 0 0 2.4rem;
+  margin: 3.2rem 0 0;
   font-size: 13px;
   letter-spacing: 0.12em;
 }
 
-.gallery + .pager {
-  margin: 3.2rem 0 0;
-}
-
-.pager a {
+.pager a,
+.pager span {
   color: var(--text);
   -webkit-text-fill-color: currentColor;
   text-decoration: none;
 }
 
+.pager span,
 .pager a[aria-current="page"] {
   color: var(--muted);
-  opacity: 1;
 }
 
 h2 {

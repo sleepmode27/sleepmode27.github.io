@@ -29,7 +29,7 @@ BVID = re.compile(r"BV[0-9A-Za-z]+")
 APPLE_MUSIC = re.compile(r"^https://music\.apple\.com(/[a-z]{2}/[A-Za-z0-9%._~:/?#\[\]@!$&'()*+,;=-]+)$")
 PHOTO_SRC = re.compile(r"^/images/[A-Za-z0-9][A-Za-z0-9._-]*$")
 PHOTO_DATE = re.compile(r"^\d{4}(-\d{2}-\d{2})?$")
-PHOTO_PAGE_SIZE = 6
+PAGE_SIZE = 6
 HOME_LIMIT = 3
 
 
@@ -154,7 +154,7 @@ def load_photos(raw):
         )
     sort_newest(photos)
     for index, photo in enumerate(photos):
-        photo["href"] = photo_page_href(index // PHOTO_PAGE_SIZE + 1)
+        photo["href"] = photo_page_href(index // PAGE_SIZE + 1)
     return photos
 
 
@@ -342,33 +342,74 @@ def photo_list(photos):
     return '<ul class="list">\n' + "\n".join(items) + "\n</ul>"
 
 
-def photo_page_href(number):
+def section_href(base, number):
     if number == 1:
-        return "/photography/"
-    return f"/photography/page/{number}/"
+        return base
+    return f"{base}page/{number}/"
 
 
-def photo_pager(page, pages):
+def photo_page_href(number):
+    return section_href("/photography/", number)
+
+
+def pager_numbers(page, pages):
+    if pages <= 7:
+        return list(range(1, pages + 1))
+    window = {1, pages, page - 1, page, page + 1}
+    numbers = sorted(number for number in window if 1 <= number <= pages)
+    sequence = []
+    previous = 0
+    for number in numbers:
+        if number - previous == 2:
+            sequence.append(previous + 1)
+        elif number - previous > 2:
+            sequence.append(None)
+        sequence.append(number)
+        previous = number
+    return sequence
+
+
+def pager(base, page, pages):
     if pages <= 1:
         return ""
     links = []
     if page > 1:
-        links.append(f'<a rel="prev" href="{photo_page_href(page - 1)}">上一页</a>')
-    for number in range(1, pages + 1):
+        links.append(f'<a rel="prev" href="{section_href(base, page - 1)}">上一页</a>')
+    for number in pager_numbers(page, pages):
+        if number is None:
+            links.append('<span aria-hidden="true">…</span>')
+            continue
         current = ' aria-current="page"' if number == page else ""
-        links.append(f'<a href="{photo_page_href(number)}"{current}>{number}</a>')
+        links.append(f'<a href="{section_href(base, number)}"{current}>{number}</a>')
     if page < pages:
-        links.append(f'<a rel="next" href="{photo_page_href(page + 1)}">下一页</a>')
+        links.append(f'<a rel="next" href="{section_href(base, page + 1)}">下一页</a>')
     return '<nav class="pager" aria-label="分页">' + "".join(links) + "</nav>\n"
 
 
 def photography_page(photos, page, pages):
     if not photos:
         return "<h1>摄影</h1>\n" + '<p class="empty">还没有照片。</p>'
-    start = (page - 1) * PHOTO_PAGE_SIZE
-    cards = "\n".join(photo_card(photo) for photo in photos[start : start + PHOTO_PAGE_SIZE])
-    pager = photo_pager(page, pages)
-    return f"<h1>摄影</h1>\n{pager}<div class=\"gallery\">\n{cards}\n</div>\n{pager}"
+    start = (page - 1) * PAGE_SIZE
+    cards = "\n".join(photo_card(photo) for photo in photos[start : start + PAGE_SIZE])
+    return (
+        f"<h1>摄影</h1>\n<div class=\"gallery\">\n{cards}\n</div>\n"
+        f"{pager('/photography/', page, pages)}"
+    )
+
+
+def write_list_pages(site, directory, title, items, render, current, empty):
+    pages = max(1, (len(items) + PAGE_SIZE - 1) // PAGE_SIZE) if items else 1
+    for page in range(1, pages + 1):
+        if not items:
+            body = empty
+        else:
+            chunk = items[(page - 1) * PAGE_SIZE : page * PAGE_SIZE]
+            body = render(chunk) + pager(f"/{directory}/", page, pages)
+        relative = f"{directory}/index.html" if page == 1 else f"{directory}/page/{page}/index.html"
+        write_page(
+            relative,
+            render_page(site, title, f"<h1>{html.escape(title)}</h1>\n{body}", current),
+        )
 
 
 def projects_list(site):
@@ -598,23 +639,18 @@ def build():
     DIST.mkdir()
 
     photos = site["photos"]
-    articles = post_list(posts)
-    videos = media_list(site["videos"]) if site["videos"] else '<p class="empty">还没有视频。</p>'
-    music = media_list(site["music"]) if site["music"] else '<p class="empty">还没有收入音乐。</p>'
-    home_articles = post_list(posts[:HOME_LIMIT]) or articles
-    home_videos = media_list(site["videos"][:HOME_LIMIT]) if site["videos"] else videos
-    home_music = media_list(site["music"][:HOME_LIMIT]) if site["music"] else music
-    home_photos = photo_list(photos[:HOME_LIMIT])
+    home_videos = media_list(site["videos"][:HOME_LIMIT]) if site["videos"] else '<p class="empty">还没有视频。</p>'
+    home_music = media_list(site["music"][:HOME_LIMIT]) if site["music"] else '<p class="empty">还没有收入音乐。</p>'
     home = (
         still("/images/sea.jpg", "雾中平静的海面", "海雾")
         + f"<h1>{html.escape(site['title'])}</h1>\n"
         + f"<p class=\"lede\">{html.escape(site['description'])}</p>\n"
-        + catalog_section("文章", home_articles, more_link("/blog/", len(posts)), catalog=False)
+        + catalog_section("文章", post_list(posts[:HOME_LIMIT]), more_link("/blog/", len(posts)), catalog=False)
         + catalog_section("视频", home_videos, more_link("/videos/", len(site["videos"])))
         + catalog_section("音乐", home_music, more_link("/music/", len(site["music"])))
-        + catalog_section("摄影", home_photos, more_link("/photography/", len(photos)))
+        + catalog_section("摄影", photo_list(photos[:HOME_LIMIT]), more_link("/photography/", len(photos)))
     )
-    page_count = max(1, (len(photos) + PHOTO_PAGE_SIZE - 1) // PHOTO_PAGE_SIZE)
+    page_count = max(1, (len(photos) + PAGE_SIZE - 1) // PAGE_SIZE)
     write_page("index.html", render_page(site, site["title"], home, "home"))
     for page in range(1, page_count + 1):
         relative = "photography/index.html" if page == 1 else f"photography/page/{page}/index.html"
@@ -622,9 +658,13 @@ def build():
             relative,
             render_page(site, "摄影", photography_page(photos, page, page_count), "photography"),
         )
-    write_page("blog/index.html", render_page(site, "文章", f"<h1>文章</h1>\n{articles}", "blog"))
-    write_page("videos/index.html", render_page(site, "视频", f"<h1>视频</h1>\n{videos}", "videos"))
-    write_page("music/index.html", render_page(site, "音乐", f"<h1>音乐</h1>\n{music}", "music"))
+    write_list_pages(site, "blog", "文章", posts, post_list, "blog", '<p class="empty">还没有文章。</p>')
+    write_list_pages(
+        site, "videos", "视频", site["videos"], media_list, "videos", '<p class="empty">还没有视频。</p>'
+    )
+    write_list_pages(
+        site, "music", "音乐", site["music"], media_list, "music", '<p class="empty">还没有收入音乐。</p>'
+    )
 
     for entry in site["videos"]:
         write_page(
