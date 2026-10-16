@@ -1,0 +1,3 @@
+[submodule "projects/hospitals-rank"]
+	path = projects/hospitals-rank
+	url = https://github.com/sleepmode27/hospitals-rank.git

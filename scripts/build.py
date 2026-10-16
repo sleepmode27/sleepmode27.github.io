@@ -3,9 +3,12 @@
 
 import html
 import json
+import os
 import re
 import shutil
+import subprocess
 import sys
+import tempfile
 from pathlib import Path
 
 import markdown
@@ -116,7 +119,7 @@ def post_list(posts):
         items.append(
             "<li>"
             f'<time datetime="{html.escape(post["date"])}">{html.escape(post["date"])}</time>'
-            f'<a href="{html.escape(post["href"])}">{html.escape(post["title"])}</a>'
+            f'<a class="entry" href="{html.escape(post["href"])}">{html.escape(post["title"])}</a>'
             f'<p class="summary">{html.escape(post["summary"])}</p>'
             "</li>"
         )
@@ -131,7 +134,10 @@ def projects_section(site):
     for project in projects:
         items.append(
             "<li>"
-            f'<a href="{html.escape(project["href"])}">{html.escape(project["name"])}</a>'
+            f'<a class="entry" href="{html.escape(project["href"])}">'
+            f"<span>{html.escape(project['name'])}</span>"
+            '<span class="arrow" aria-hidden="true">→</span>'
+            "</a>"
             f'<p class="summary">{html.escape(project["description"])}</p>'
             "</li>"
         )
@@ -175,23 +181,106 @@ def has_site_files(directory):
     return False
 
 
-def copy_projects(site):
-    ignore = shutil.ignore_patterns(".*")
-    copied = set()
-    if PROJECTS_DIR.exists():
-        for child in PROJECTS_DIR.iterdir():
-            if not child.is_dir() or child.name.startswith("."):
-                continue
-            if not has_site_files(child):
-                continue
-            shutil.copytree(child, DIST / "projects" / child.name, ignore=ignore)
-            copied.add(child.name)
+def next_config_path(directory):
+    for name in ("next.config.ts", "next.config.mjs", "next.config.js"):
+        path = directory / name
+        if path.is_file():
+            return path
+    return None
 
+
+def is_next_export(directory):
+    package_path = directory / "package.json"
+    config = next_config_path(directory)
+    if not package_path.is_file() or config is None:
+        return False
+    package = json.loads(package_path.read_text(encoding="utf-8"))
+    dependencies = {}
+    dependencies.update(package.get("dependencies") or {})
+    dependencies.update(package.get("devDependencies") or {})
+    if "next" not in dependencies:
+        return False
+    return "export" in config.read_text(encoding="utf-8")
+
+
+def inject_base_path(text, base_path):
+    if "basePath" in text:
+        return text
+    for needle in ("const nextConfig: NextConfig = {", "const nextConfig = {"):
+        if needle in text:
+            insertion = (
+                needle
+                + "\n"
+                + f'  basePath: "{base_path}",\n'
+                + f'  assetPrefix: "{base_path}",\n'
+                + "  trailingSlash: true,"
+            )
+            return text.replace(needle, insertion, 1)
+    fail("Next 配置里找不到 nextConfig，无法设置 basePath")
+
+
+def prefix_public_paths(workspace):
+    map_file = workspace / "components" / "china-map.tsx"
+    if not map_file.is_file():
+        return
+    text = map_file.read_text(encoding="utf-8")
+    old = 'fetch("/geo/china.json")'
+    new = 'fetch(`${process.env.NEXT_PUBLIC_BASE_PATH ?? ""}/geo/china.json`)'
+    if old not in text:
+        return
+    map_file.write_text(text.replace(old, new, 1), encoding="utf-8")
+
+
+def run_command(command, cwd, env=None):
+    print("+", " ".join(command), flush=True)
+    completed = subprocess.run(command, cwd=cwd, env=env)
+    if completed.returncode != 0:
+        fail(f"命令失败：{' '.join(command)}")
+
+
+def build_next_export(directory, base_path, destination):
+    config = next_config_path(directory)
+    with tempfile.TemporaryDirectory(prefix="pages-project-") as temporary:
+        workspace = Path(temporary) / "app"
+        shutil.copytree(
+            directory,
+            workspace,
+            ignore=shutil.ignore_patterns(".git", "node_modules", ".next", "out"),
+        )
+        config_copy = workspace / config.name
+        config_copy.write_text(
+            inject_base_path(config_copy.read_text(encoding="utf-8"), base_path),
+            encoding="utf-8",
+        )
+        prefix_public_paths(workspace)
+        run_command(["npm", "ci"], workspace)
+        env = os.environ.copy()
+        env["NEXT_PUBLIC_BASE_PATH"] = base_path
+        run_command(["npm", "run", "build"], workspace, env)
+        output = workspace / "out"
+        if not (output / "index.html").is_file():
+            fail(f"{directory.name} 的静态导出里没有 index.html")
+        shutil.copytree(output, destination)
+
+
+def publish_project(name, directory):
+    destination = DIST / "projects" / name
+    if is_next_export(directory):
+        build_next_export(directory, f"/projects/{name}", destination)
+        return
+    if (directory / "index.html").is_file() and has_site_files(directory):
+        shutil.copytree(directory, destination, ignore=shutil.ignore_patterns(".*"))
+        return
+    fail(f"项目 {name} 需要放在 projects/{name}/，并且包含 index.html")
+
+
+def copy_projects(site):
     for project in site["projects"]:
         name = PROJECT_HREF.match(project["href"]).group(1)
-        index = PROJECTS_DIR / name / "index.html"
-        if name not in copied or not index.is_file():
-            fail(f"项目 {name} 需要放在 projects/{name}/，并且包含 index.html")
+        directory = PROJECTS_DIR / name
+        if not directory.is_dir():
+            fail(f"项目 {name} 需要放在 projects/{name}/")
+        publish_project(name, directory)
 
 
 def build():
@@ -228,7 +317,7 @@ def build():
     missing = (
         "<h1>页面不存在</h1>\n"
         "<p>这个地址没有对应的页面。</p>\n"
-        '<p><a href="/">返回首页</a></p>'
+        '<p><a class="back" href="/">返回首页</a></p>'
     )
     write_page("404.html", render_page(site, "页面不存在", missing, ""))
     shutil.copyfile(SRC / "style.css", DIST / "style.css")

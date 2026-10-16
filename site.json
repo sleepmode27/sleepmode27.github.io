@@ -1,5 +1,11 @@
 {
   "title": "sleepmode27",
   "description": "个人博客",
-  "projects": []
+  "projects": [
+    {
+      "name": "三甲医院名录",
+      "description": "按省份查看三级甲等医院，并对照复旦大学医院管理研究所 2023 年度榜单。",
+      "href": "/projects/hospitals-rank/"
+    }
+  ]
 }

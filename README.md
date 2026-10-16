@@ -47,7 +47,7 @@ git push
 
 ## 挂载一个网页子项目
 
-子项目仓库的根目录需要能直接当网站打开，并且包含 `index.html`。样式和脚本使用相对路径，例如 `./style.css`。Next 一类静态导出要在那个项目里把 `basePath` 设为 `/projects/<name>`，submodule 指向构建产物目录。
+子项目仓库的根目录需要能直接当网站打开，并且包含 `index.html`。样式和脚本使用相对路径，例如 `./style.css`。Next 静态导出项目可以直接挂源码仓库，站点构建时会安装依赖，把 `basePath` 设为 `/projects/<name>` 并导出静态文件。
 
 ```bash
 git submodule add https://github.com/sleepmode27/<repo>.git projects/<name>
