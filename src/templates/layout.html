@@ -7,13 +7,13 @@
   <meta name="description" content="{{description}}" />
   <link rel="stylesheet" href="/style.css" />
 </head>
-<body>
+<body class="{{body_class}}">
   <div class="page">
     <header class="site-header">
       <a class="site-title" href="/">{{site_title}}</a>
       <nav>
         <a href="/photography/"{{photography_current}}>photography</a>
-        <a href="/videos/"{{videos_current}}>video</a>
+        <a href="/videos/"{{videos_current}}>videos</a>
         <a href="/music/"{{music_current}}>music</a>
         <a href="/blog/"{{blog_current}}>articles</a>
       </nav>
@@ -22,5 +22,18 @@
 {{content}}
     </main>
   </div>
+  <script>
+    (function () {
+      var header = document.querySelector(".site-header");
+      var still = document.querySelector(".stage > .still");
+      if (!header || !still) return;
+      function sync() {
+        header.classList.toggle("is-solid", still.getBoundingClientRect().top < 0);
+      }
+      sync();
+      document.addEventListener("scroll", sync, { passive: true });
+      window.addEventListener("resize", sync);
+    })();
+  </script>
 </body>
 </html>

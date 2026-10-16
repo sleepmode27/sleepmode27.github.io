@@ -1,6 +1,6 @@
 # sleepmode27.github.io
 
-个人博客首页。导航是 photography、video、music、articles。首页依次列出文章、视频、音乐和摄影。
+个人博客首页。导航是 photography、videos、music、articles。首页依次列出文章、视频、音乐和摄影。
 
 文章放在 `content/posts`。摄影、视频和音乐写在 `site.json`。其他网页项目挂到 `projects/<name>`，发布后从对应 URL 直接访问。
 
@@ -53,7 +53,7 @@ tags: 随笔, 记录
 
 `name`、`src`、`summary` 必填。`src` 写成 `/images/<文件名>`，文件要真实存在。`place` 和 `date` 可以省略。`date` 用 `YYYY` 或 `YYYY-MM-DD`；没有可靠的拍摄时间就留空，页面上不会出现「拍摄时间」。
 
-摄影、文章、视频和音乐都按日期从新到旧排列，栏目页每页 6 条。第一页是栏目地址本身，例如 `/photography/`、`/blog/`、`/videos/`、`/music/`。第 7 条起在对应的 `/page/2/`。分页只出现在内容下方靠右。不超过 7 页时显示全部页码；再多就只留当前页附近、第 1 页和最后一页，中间用省略号。不足 6 条时不显示分页。没有日期的条目排在最后。首页每个栏目只放最新 3 条；超过 3 条时，列表下面有「其余」，点进去就是对应栏目页。首页顶部的大图仍是 `/images/sea.jpg`。
+摄影、文章、视频和音乐都按日期从新到旧排列，栏目页每页 6 条。第一页是栏目地址本身，例如 `/photography/`、`/blog/`、`/videos/`、`/music/`。第 7 条起在对应的 `/page/2/`。分页只出现在内容下方靠右。不超过 7 页时显示全部页码；再多就只留当前页附近、第 1 页和最后一页，中间用省略号。不足 6 条时不显示分页。没有日期的条目排在最后。首页每个栏目只放最新 3 条；超过 3 条时，下面有「全部文章」「全部视频」「全部音乐」或「全部摄影」，点进去就是对应栏目页。首页摄影是三张横图，标题和简介在图下；文章、视频和音乐仍是文字列表。首页顶部的大图仍是 `/images/sea.jpg`。
 
 ## 增加一个视频
 
@@ -67,13 +67,14 @@ tags: 随笔, 记录
   "date": "2025-02-11",
   "watch": "https://www.bilibili.com/video/BV1RPNqeYEeD/",
   "tags": [
-    {"name": "musician", "value": "haruka nakamura"},
-    {"name": "流派", "value": "现代古典"}
+    {"name": "音乐人", "value": "haruka nakamura"},
+    {"name": "流派", "value": "现代古典"},
+    {"name": "合奏", "value": "CANTUS"}
   ]
 }
 ```
 
-`slug` 用英文和数字，地址是 `/videos/guang/`。`date` 可以不写，格式与照片相同。写了以后首页会按日期取最新 3 条，列表里也会显示。列表不放播放器，点进详情后才出现，标题是纯文字。
+`slug` 用英文和数字，地址是 `/videos/guang/`。`date` 可以不写，格式与照片相同。写了以后首页会按日期取最新 3 条，列表里也会显示。列表不放播放器，点进详情后才出现，播放器下方有原视频链接。
 
 ## 增加一首音乐
 
@@ -87,7 +88,7 @@ tags: 随笔, 记录
   "date": "2014-12-24",
   "listen": "https://music.apple.com/jp/album/%E5%85%89-feat-cantus/1512512531?i=1512512551",
   "tags": [
-    {"name": "musician", "value": "haruka nakamura"}
+    {"name": "音乐人", "value": "haruka nakamura"}
   ]
 }
 ```

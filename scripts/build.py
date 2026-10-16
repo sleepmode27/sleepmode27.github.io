@@ -244,10 +244,16 @@ def sort_newest(items):
     return items
 
 
-def more_link(href, total):
+def more_link(href, total, label):
     if total <= HOME_LIMIT:
         return ""
-    return f'<p class="more"><a href="{html.escape(href)}">其余</a></p>\n'
+    return (
+        f'<p class="more"><a href="{html.escape(href)}">{html.escape(label)}</a></p>\n'
+    )
+
+
+def column(inner):
+    return f'<div class="column">\n{inner}</div>\n'
 
 
 def post_list(posts):
@@ -322,24 +328,30 @@ def photo_card(photo):
     )
 
 
-def photo_list(photos):
-    if not photos:
-        return '<p class="empty">还没有照片。</p>'
-    items = []
-    for index, photo in enumerate(photos):
-        tags = []
-        if photo["place"]:
-            tags.append({"name": "拍摄地", "value": photo["place"]})
-        if photo["date"]:
-            tags.append({"name": "拍摄时间", "value": photo["date"]})
-        items.append(
-            "<li>"
-            f'<a class="entry" href="{html.escape(photo["href"])}">{html.escape(photo["name"])}</a>'
-            f'<p class="summary">{html.escape(photo["summary"])}</p>'
-            f"{pair_tags(tags)}"
-            "</li>"
-        )
-    return '<ul class="list">\n' + "\n".join(items) + "\n</ul>"
+def home_photo_section(photos):
+    shown = photos[:HOME_LIMIT]
+    if not shown:
+        body = '<p class="empty">还没有照片。</p>'
+    else:
+        cards = []
+        for photo in shown:
+            cards.append(
+                '<figure class="photo">\n'
+                f'<a href="{html.escape(photo["href"])}">'
+                f'<img src="{html.escape(photo["src"])}" alt="{html.escape(photo["name"])}">'
+                f"<h2>{html.escape(photo['name'])}</h2>"
+                "</a>\n"
+                f'<p class="summary">{html.escape(photo["summary"])}</p>\n'
+                "</figure>"
+            )
+        body = '<div class="home-gallery">\n' + "\n".join(cards) + "\n</div>\n"
+    return (
+        '<section class="home-photos">\n'
+        "<h2>摄影</h2>\n"
+        f"{body}"
+        f"{more_link('/photography/', len(photos), '全部摄影')}"
+        "</section>\n"
+    )
 
 
 def section_href(base, number):
@@ -408,7 +420,12 @@ def write_list_pages(site, directory, title, items, render, current, empty):
         relative = f"{directory}/index.html" if page == 1 else f"{directory}/page/{page}/index.html"
         write_page(
             relative,
-            render_page(site, title, f"<h1>{html.escape(title)}</h1>\n{body}", current),
+            render_page(
+                site,
+                title,
+                column(f"<h1>{html.escape(title)}</h1>\n{body}"),
+                current,
+            ),
         )
 
 
@@ -470,9 +487,16 @@ def media_page(entry, kind):
         player = music_player(entry)
     else:
         player = ""
+    follow = ""
+    if kind == "videos" and entry.get("link"):
+        follow = (
+            f'<p class="more"><a href="{html.escape(entry["link"])}">'
+            "在哔哩哔哩观看</a></p>\n"
+        )
     return (
         '<article class="piece">\n'
         f"{player}\n"
+        f"{follow}"
         f"<h1>{html.escape(entry['name'])}</h1>\n"
         f"{pair_tags(entry['tags'])}\n"
         f'<p class="lede">{html.escape(entry["summary"])}</p>\n'
@@ -494,6 +518,7 @@ def render_page(site, page_title, content, current):
             "videos_current": ' aria-current="page"' if current == "videos" else "",
             "music_current": ' aria-current="page"' if current == "music" else "",
             "content": content,
+            "body_class": "has-hero" if current == "home" else "",
         },
     )
 
@@ -643,12 +668,23 @@ def build():
     home_music = media_list(site["music"][:HOME_LIMIT]) if site["music"] else '<p class="empty">还没有收入音乐。</p>'
     home = (
         still("/images/sea.jpg", "雾中平静的海面", "海雾")
-        + f"<h1>{html.escape(site['title'])}</h1>\n"
-        + f"<p class=\"lede\">{html.escape(site['description'])}</p>\n"
-        + catalog_section("文章", post_list(posts[:HOME_LIMIT]), more_link("/blog/", len(posts)), catalog=False)
-        + catalog_section("视频", home_videos, more_link("/videos/", len(site["videos"])))
-        + catalog_section("音乐", home_music, more_link("/music/", len(site["music"])))
-        + catalog_section("摄影", photo_list(photos[:HOME_LIMIT]), more_link("/photography/", len(photos)))
+        + column(
+            f"<h1>{html.escape(site['title'])}</h1>\n"
+            + f"<p class=\"lede\">{html.escape(site['description'])}</p>\n"
+            + catalog_section(
+                "文章",
+                post_list(posts[:HOME_LIMIT]),
+                more_link("/blog/", len(posts), "全部文章"),
+                catalog=False,
+            )
+            + catalog_section(
+                "视频", home_videos, more_link("/videos/", len(site["videos"]), "全部视频")
+            )
+            + catalog_section(
+                "音乐", home_music, more_link("/music/", len(site["music"]), "全部音乐")
+            )
+        )
+        + home_photo_section(photos)
     )
     page_count = max(1, (len(photos) + PAGE_SIZE - 1) // PAGE_SIZE)
     write_page("index.html", render_page(site, site["title"], home, "home"))
@@ -697,7 +733,7 @@ def build():
         "<p>这个地址没有对应的页面。</p>\n"
         '<p><a class="back" href="/">返回首页</a></p>'
     )
-    write_page("404.html", render_page(site, "页面不存在", missing, ""))
+    write_page("404.html", render_page(site, "页面不存在", column(missing), ""))
     shutil.copyfile(SRC / "style.css", DIST / "style.css")
     images = SRC / "images"
     if images.is_dir():

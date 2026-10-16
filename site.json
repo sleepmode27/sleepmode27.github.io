@@ -16,9 +16,9 @@
       "date": "2025-02-11",
       "watch": "https://www.bilibili.com/video/BV1RPNqeYEeD/",
       "tags": [
-        {"name": "musician", "value": "haruka nakamura"},
+        {"name": "音乐人", "value": "haruka nakamura"},
         {"name": "流派", "value": "现代古典"},
-        {"name": "ensemble", "value": "CANTUS"}
+        {"name": "合奏", "value": "CANTUS"}
       ]
     }
   ],
@@ -30,9 +30,9 @@
       "date": "2014-12-24",
       "listen": "https://music.apple.com/jp/album/%E5%85%89-feat-cantus/1512512531?i=1512512551",
       "tags": [
-        {"name": "musician", "value": "haruka nakamura"},
+        {"name": "音乐人", "value": "haruka nakamura"},
         {"name": "流派", "value": "现代古典"},
-        {"name": "ensemble", "value": "CANTUS"}
+        {"name": "合奏", "value": "CANTUS"}
       ]
     }
   ],
