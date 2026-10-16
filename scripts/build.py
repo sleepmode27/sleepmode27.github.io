@@ -347,7 +347,7 @@ def home_photo_section(photos):
         body = '<div class="home-gallery">\n' + "\n".join(cards) + "\n</div>\n"
     return (
         '<section class="home-photos">\n'
-        "<h2>摄影</h2>\n"
+        "<h2>photography</h2>\n"
         f"{body}"
         f"{more_link('/photography/', len(photos), '全部摄影')}"
         "</section>\n"
@@ -400,11 +400,11 @@ def pager(base, page, pages):
 
 def photography_page(photos, page, pages):
     if not photos:
-        return "<h1>摄影</h1>\n" + '<p class="empty">还没有照片。</p>'
+        return "<h1>photography</h1>\n" + '<p class="empty">还没有照片。</p>'
     start = (page - 1) * PAGE_SIZE
     cards = "\n".join(photo_card(photo) for photo in photos[start : start + PAGE_SIZE])
     return (
-        f"<h1>摄影</h1>\n<div class=\"gallery\">\n{cards}\n</div>\n"
+        f"<h1>photography</h1>\n<div class=\"gallery\">\n{cards}\n</div>\n"
         f"{pager('/photography/', page, pages)}"
     )
 
@@ -518,7 +518,6 @@ def render_page(site, page_title, content, current):
             "videos_current": ' aria-current="page"' if current == "videos" else "",
             "music_current": ' aria-current="page"' if current == "music" else "",
             "content": content,
-            "body_class": "has-hero" if current == "home" else "",
         },
     )
 
@@ -672,16 +671,16 @@ def build():
             f"<h1>{html.escape(site['title'])}</h1>\n"
             + f"<p class=\"lede\">{html.escape(site['description'])}</p>\n"
             + catalog_section(
-                "文章",
+                "articles",
                 post_list(posts[:HOME_LIMIT]),
                 more_link("/blog/", len(posts), "全部文章"),
                 catalog=False,
             )
             + catalog_section(
-                "视频", home_videos, more_link("/videos/", len(site["videos"]), "全部视频")
+                "videos", home_videos, more_link("/videos/", len(site["videos"]), "全部视频")
             )
             + catalog_section(
-                "音乐", home_music, more_link("/music/", len(site["music"]), "全部音乐")
+                "music", home_music, more_link("/music/", len(site["music"]), "全部音乐")
             )
         )
         + home_photo_section(photos)
@@ -692,14 +691,14 @@ def build():
         relative = "photography/index.html" if page == 1 else f"photography/page/{page}/index.html"
         write_page(
             relative,
-            render_page(site, "摄影", photography_page(photos, page, page_count), "photography"),
+            render_page(site, "photography", photography_page(photos, page, page_count), "photography"),
         )
-    write_list_pages(site, "blog", "文章", posts, post_list, "blog", '<p class="empty">还没有文章。</p>')
+    write_list_pages(site, "blog", "articles", posts, post_list, "blog", '<p class="empty">还没有文章。</p>')
     write_list_pages(
-        site, "videos", "视频", site["videos"], media_list, "videos", '<p class="empty">还没有视频。</p>'
+        site, "videos", "videos", site["videos"], media_list, "videos", '<p class="empty">还没有视频。</p>'
     )
     write_list_pages(
-        site, "music", "音乐", site["music"], media_list, "music", '<p class="empty">还没有收入音乐。</p>'
+        site, "music", "music", site["music"], media_list, "music", '<p class="empty">还没有收入音乐。</p>'
     )
 
     for entry in site["videos"]:

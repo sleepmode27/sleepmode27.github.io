@@ -1,6 +1,6 @@
 # sleepmode27.github.io
 
-个人博客首页。导航是 photography、videos、music、articles。首页依次列出文章、视频、音乐和摄影。
+个人博客首页。导航和栏目标题是 photography、videos、music、articles，对应摄影、视频、音乐、文章。首页按这个顺序排列。
 
 文章放在 `content/posts`。摄影、视频和音乐写在 `site.json`。其他网页项目挂到 `projects/<name>`，发布后从对应 URL 直接访问。
 
