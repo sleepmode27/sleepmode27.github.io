@@ -197,7 +197,8 @@ article time {
   color: var(--muted);
 }
 
-.projects {
+.projects,
+.listening {
   margin-top: 2.75rem;
 }
 

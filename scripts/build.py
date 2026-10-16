@@ -108,6 +108,13 @@ def load_site():
                 fail(f"项目条目缺少 {key}")
         if not PROJECT_HREF.match(project["href"]):
             fail(f"项目链接需要是 /projects/<name>/ ：{project['href']}")
+    videos = site.get("videos") or []
+    if not isinstance(videos, list):
+        fail("site.json 的 videos 需要是数组")
+    for video in videos:
+        for key in ("name", "description", "href"):
+            if not video.get(key):
+                fail(f"视频条目缺少 {key}")
     return site
 
 
@@ -124,6 +131,25 @@ def post_list(posts):
             "</li>"
         )
     return '<ul class="list">\n' + "\n".join(items) + "\n</ul>"
+
+
+def videos_section(site):
+    videos = site.get("videos") or []
+    if not videos:
+        return ""
+    items = []
+    for video in videos:
+        items.append(
+            "<li>"
+            f'<a class="entry" href="{html.escape(video["href"])}">{html.escape(video["name"])}</a>'
+            f'<p class="summary">{html.escape(video["description"])}</p>'
+            "</li>"
+        )
+    return (
+        '<section class="listening">\n<h2>视听</h2>\n<ul class="list">\n'
+        + "\n".join(items)
+        + "\n</ul>\n</section>\n"
+    )
 
 
 def projects_section(site):
@@ -275,12 +301,26 @@ def publish_project(name, directory):
 
 
 def copy_projects(site):
+    listed = set()
     for project in site["projects"]:
         name = PROJECT_HREF.match(project["href"]).group(1)
         directory = PROJECTS_DIR / name
         if not directory.is_dir():
             fail(f"项目 {name} 需要放在 projects/{name}/")
         publish_project(name, directory)
+        listed.add(name)
+
+    if not PROJECTS_DIR.exists():
+        return
+    for child in PROJECTS_DIR.iterdir():
+        if not child.is_dir() or child.name.startswith(".") or child.name in listed:
+            continue
+        if (child / "index.html").is_file():
+            shutil.copytree(
+                child,
+                DIST / "projects" / child.name,
+                ignore=shutil.ignore_patterns(".*"),
+            )
 
 
 def build():
@@ -296,6 +336,7 @@ def build():
         f"<p class=\"lede\">{html.escape(site['description'])}</p>\n"
         "<section>\n<h2>文章</h2>\n"
         f"{articles}\n</section>\n"
+        f"{videos_section(site)}"
         f"{projects_section(site)}"
     )
     write_page("index.html", render_page(site, site["title"], home, "home"))
