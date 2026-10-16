@@ -26,6 +26,9 @@ DATE = re.compile(r"^\d{4}-\d{2}-\d{2}$")
 PLACEHOLDER = re.compile(r"\{\{([a-z_]+)\}\}")
 PROJECT_HREF = re.compile(r"^/projects/([A-Za-z0-9][A-Za-z0-9_-]*)/$")
 BVID = re.compile(r"BV[0-9A-Za-z]+")
+PHOTO_SRC = re.compile(r"^/images/[A-Za-z0-9][A-Za-z0-9._-]*$")
+PHOTO_DATE = re.compile(r"^\d{4}(-\d{2}-\d{2})?$")
+PHOTO_PAGE_SIZE = 6
 
 
 def fail(message):
@@ -116,7 +119,38 @@ def load_site():
             fail(f"项目链接需要是 /projects/<name>/ ：{project['href']}")
     site["videos"] = load_media(site.get("videos") or [], "videos", "watch", required_link=True)
     site["music"] = load_media(site.get("music") or [], "music", "listen", required_link=False)
+    site["photos"] = load_photos(site.get("photos") or [])
     return site
+
+
+def load_photos(raw):
+    if not isinstance(raw, list):
+        fail("site.json 的 photos 需要是数组")
+    photos = []
+    for item in raw:
+        if not isinstance(item, dict):
+            fail("photos 的条目需要是对象")
+        for field in ("name", "src", "summary"):
+            if not str(item.get(field) or "").strip():
+                fail(f"照片条目缺少 {field}")
+        src = item["src"].strip()
+        if not PHOTO_SRC.match(src):
+            fail(f"照片路径需要是 /images/<file> ：{src}")
+        if not (SRC / src.lstrip("/")).is_file():
+            fail(f"找不到照片 {src}")
+        date = str(item.get("date") or "").strip()
+        if date and not PHOTO_DATE.match(date):
+            fail(f"照片日期需要是 YYYY 或 YYYY-MM-DD ：{date}")
+        photos.append(
+            {
+                "name": item["name"].strip(),
+                "src": src,
+                "place": str(item.get("place") or "").strip(),
+                "date": date,
+                "summary": item["summary"].strip(),
+            }
+        )
+    return photos
 
 
 def load_media(raw, key, link_key, required_link):
@@ -227,6 +261,56 @@ def still(src, alt, caption):
         f"<figcaption>{html.escape(caption)}</figcaption>\n"
         "</figure>\n"
     )
+
+
+def photo_card(photo):
+    rows = []
+    if photo["place"]:
+        rows.append(f"<div><dt>拍摄地</dt><dd>{html.escape(photo['place'])}</dd></div>")
+    if photo["date"]:
+        rows.append(
+            "<div><dt>拍摄时间</dt>"
+            f'<dd><time datetime="{html.escape(photo["date"])}">{html.escape(photo["date"])}</time></dd>'
+            "</div>"
+        )
+    if photo["summary"]:
+        rows.append(f"<div><dt>简介</dt><dd>{html.escape(photo['summary'])}</dd></div>")
+    info = f'<dl class="photo-info">{"".join(rows)}</dl>' if rows else ""
+    return (
+        '<figure class="photo">\n'
+        f"<h2>{html.escape(photo['name'])}</h2>\n"
+        f'<img src="{html.escape(photo["src"])}" alt="{html.escape(photo["name"])}">\n'
+        f"{info}\n"
+        "</figure>"
+    )
+
+
+def photo_page_href(number):
+    if number == 1:
+        return "/photography/"
+    return f"/photography/page/{number}/"
+
+
+def photo_pager(page, pages):
+    if pages <= 1:
+        return ""
+    links = []
+    if page > 1:
+        links.append(f'<a rel="prev" href="{photo_page_href(page - 1)}">上一页</a>')
+    for number in range(1, pages + 1):
+        current = ' aria-current="page"' if number == page else ""
+        links.append(f'<a href="{photo_page_href(number)}"{current}>{number}</a>')
+    if page < pages:
+        links.append(f'<a rel="next" href="{photo_page_href(page + 1)}">下一页</a>')
+    return '<nav class="pager" aria-label="分页">' + "".join(links) + "</nav>\n"
+
+
+def photography_page(photos, page, pages):
+    if not photos:
+        return "<h1>摄影</h1>\n" + '<p class="empty">还没有照片。</p>'
+    start = (page - 1) * PHOTO_PAGE_SIZE
+    cards = "\n".join(photo_card(photo) for photo in photos[start : start + PHOTO_PAGE_SIZE])
+    return f"<h1>摄影</h1>\n<div class=\"gallery\">\n{cards}\n</div>\n{photo_pager(page, pages)}"
 
 
 def projects_list(site):
@@ -447,12 +531,15 @@ def build():
         + f"{catalog_section('音乐', music)}"
         + f"{catalog_section('works', works)}"
     )
-    photos = (
-        still("/images/sea.jpg", "雾中平静的海面", "海雾")
-        + still("/images/forest.jpg", "雾里的针叶树", "针叶")
-    )
+    photos = site["photos"]
+    page_count = max(1, (len(photos) + PHOTO_PAGE_SIZE - 1) // PHOTO_PAGE_SIZE)
     write_page("index.html", render_page(site, site["title"], home, "home"))
-    write_page("photography/index.html", render_page(site, "photography", photos, "photography"))
+    for page in range(1, page_count + 1):
+        relative = "photography/index.html" if page == 1 else f"photography/page/{page}/index.html"
+        write_page(
+            relative,
+            render_page(site, "摄影", photography_page(photos, page, page_count), "photography"),
+        )
     write_page("blog/index.html", render_page(site, "文章", f"<h1>文章</h1>\n{articles}", "blog"))
     write_page("videos/index.html", render_page(site, "视频", f"<h1>视频</h1>\n{videos}", "videos"))
     write_page("music/index.html", render_page(site, "音乐", f"<h1>音乐</h1>\n{music}", "music"))

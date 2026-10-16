@@ -21,5 +21,21 @@
       ]
     }
   ],
-  "music": []
+  "music": [],
+  "photos": [
+    {
+      "name": "海雾",
+      "src": "/images/sea.jpg",
+      "place": "海上",
+      "date": "",
+      "summary": "雾把天和海接在一起，只剩一层浅色的水面。"
+    },
+    {
+      "name": "针叶",
+      "src": "/images/forest.jpg",
+      "place": "林中",
+      "date": "2016",
+      "summary": "雾停在针叶之间，远处的树几乎看不见。"
+    }
+  ]
 }

@@ -2,7 +2,7 @@
 
 个人博客首页。文章放在 `content/posts`，其他静态网页项目挂到 `projects/<name>`，发布后从对应 URL 直接访问。
 
-首页暂时用了两张 CC0 照片，放在 `src/images/`。换掉同名文件即可。
+首页暂时用了 CC0 照片，文件在 `src/images/`。摄影页从 `site.json` 的 `photos` 读取，每页 6 张。换图时改同名文件，或按同样的字段再加一条。
 
 站点由 GitHub Actions 构建。仓库需要公开，Pages 的构建来源选择 GitHub Actions。
 

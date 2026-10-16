@@ -115,6 +115,74 @@ h1 {
   letter-spacing: 0.14em;
 }
 
+.gallery {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 3rem 1.6rem;
+}
+
+.photo {
+  margin: 0;
+}
+
+.gallery h2 {
+  margin: 0 0 0.55rem;
+  font-size: 1.02rem;
+  font-weight: 400;
+  letter-spacing: 0.03em;
+}
+
+.photo img {
+  display: block;
+  width: 100%;
+  aspect-ratio: 4 / 5;
+  object-fit: cover;
+}
+
+.photo-info {
+  margin: 0.75rem 0 0;
+}
+
+.photo-info div {
+  display: grid;
+  grid-template-columns: max-content 1fr;
+  gap: 0.35rem 0.85rem;
+  margin-top: 0.28rem;
+}
+
+.photo-info dt,
+.photo-info dd {
+  margin: 0;
+}
+
+.photo-info dt {
+  color: var(--muted);
+  font-size: 0.75rem;
+  letter-spacing: 0.12em;
+  white-space: nowrap;
+}
+
+.photo-info dd {
+  font-size: 0.82rem;
+}
+
+.pager {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4rem 1.15rem;
+  margin-top: 3.2rem;
+  font-size: 13px;
+  letter-spacing: 0.12em;
+}
+
+.pager a {
+  text-decoration: none;
+}
+
+.pager a[aria-current="page"] {
+  opacity: 0.4;
+}
+
 h2 {
   margin: 0 0 0.4rem;
   font-size: 0.75rem;
@@ -297,6 +365,12 @@ article .lede {
   background: none;
 }
 
+@media (max-width: 960px) {
+  .gallery {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
 @media (max-width: 720px) {
   .page {
     padding: 0 1.25rem 4rem;
@@ -323,6 +397,10 @@ article .lede {
 
   .still figcaption {
     padding: 0 1.25rem;
+  }
+
+  .gallery {
+    grid-template-columns: 1fr;
   }
 
   h1 {
