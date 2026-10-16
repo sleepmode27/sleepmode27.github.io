@@ -30,6 +30,7 @@ APPLE_MUSIC = re.compile(r"^https://music\.apple\.com(/[a-z]{2}/[A-Za-z0-9%._~:/
 PHOTO_SRC = re.compile(r"^/images/[A-Za-z0-9][A-Za-z0-9._-]*$")
 PHOTO_DATE = re.compile(r"^\d{4}(-\d{2}-\d{2})?$")
 PHOTO_PAGE_SIZE = 6
+HOME_LIMIT = 3
 
 
 def fail(message):
@@ -151,6 +152,9 @@ def load_photos(raw):
                 "summary": item["summary"].strip(),
             }
         )
+    sort_newest(photos)
+    for index, photo in enumerate(photos):
+        photo["href"] = photo_page_href(index // PHOTO_PAGE_SIZE + 1)
     return photos
 
 
@@ -178,6 +182,9 @@ def load_media(raw, key, link_key, required_link):
             fail(f"{key} 的链接需要是 http(s)：{link}")
         if key == "music" and link and not APPLE_MUSIC.match(link):
             fail(f"音乐的 listen 需要是 https://music.apple.com/ 地址：{link}")
+        date = str(item.get("date") or "").strip()
+        if date and not PHOTO_DATE.match(date):
+            fail(f"{key} 的 date 需要是 YYYY 或 YYYY-MM-DD ：{date}")
         tags = item.get("tags") or []
         if not isinstance(tags, list):
             fail(f"{key} 的 tags 需要是数组")
@@ -196,11 +203,12 @@ def load_media(raw, key, link_key, required_link):
                 "name": item["name"].strip(),
                 "summary": item["summary"].strip(),
                 "link": link,
+                "date": date,
                 "tags": parsed_tags,
                 "href": f"/{key}/{slug}/",
             }
         )
-    return entries
+    return sort_newest(entries)
 
 
 def text_tags(tags):
@@ -224,6 +232,24 @@ def pair_tags(tags):
     return '<ul class="tags">' + "".join(items) + "</ul>"
 
 
+def newest_key(item):
+    value = item.get("date") or ""
+    if len(value) == 4:
+        value = value + "-01-01"
+    return (bool(value), value)
+
+
+def sort_newest(items):
+    items.sort(key=newest_key, reverse=True)
+    return items
+
+
+def more_link(href, total):
+    if total <= HOME_LIMIT:
+        return ""
+    return f'<p class="more"><a href="{html.escape(href)}">其余</a></p>\n'
+
+
 def post_list(posts):
     if not posts:
         return '<p class="empty">还没有文章。</p>'
@@ -243,8 +269,15 @@ def post_list(posts):
 def media_list(entries):
     items = []
     for entry in entries:
+        date = ""
+        if entry.get("date"):
+            date = (
+                f'<time datetime="{html.escape(entry["date"])}">'
+                f'{html.escape(entry["date"])}</time>'
+            )
         items.append(
             "<li>"
+            f"{date}"
             f'<a class="entry" href="{html.escape(entry["href"])}">{html.escape(entry["name"])}</a>'
             f'<p class="summary">{html.escape(entry["summary"])}</p>'
             f"{pair_tags(entry['tags'])}"
@@ -253,8 +286,9 @@ def media_list(entries):
     return '<ul class="list">\n' + "\n".join(items) + "\n</ul>"
 
 
-def catalog_section(title, body):
-    return f'<section class="catalog">\n<h2>{html.escape(title)}</h2>\n{body}\n</section>\n'
+def catalog_section(title, body, more="", catalog=True):
+    kind = ' class="catalog"' if catalog else ""
+    return f"<section{kind}>\n<h2>{html.escape(title)}</h2>\n{body}\n{more}</section>\n"
 
 
 def still(src, alt, caption):
@@ -298,10 +332,9 @@ def photo_list(photos):
             tags.append({"name": "拍摄地", "value": photo["place"]})
         if photo["date"]:
             tags.append({"name": "拍摄时间", "value": photo["date"]})
-        href = photo_page_href(index // PHOTO_PAGE_SIZE + 1)
         items.append(
             "<li>"
-            f'<a class="entry" href="{html.escape(href)}">{html.escape(photo["name"])}</a>'
+            f'<a class="entry" href="{html.escape(photo["href"])}">{html.escape(photo["name"])}</a>'
             f'<p class="summary">{html.escape(photo["summary"])}</p>'
             f"{pair_tags(tags)}"
             "</li>"
@@ -564,19 +597,22 @@ def build():
         shutil.rmtree(DIST)
     DIST.mkdir()
 
+    photos = site["photos"]
     articles = post_list(posts)
     videos = media_list(site["videos"]) if site["videos"] else '<p class="empty">还没有视频。</p>'
     music = media_list(site["music"]) if site["music"] else '<p class="empty">还没有收入音乐。</p>'
-    photos = site["photos"]
+    home_articles = post_list(posts[:HOME_LIMIT]) or articles
+    home_videos = media_list(site["videos"][:HOME_LIMIT]) if site["videos"] else videos
+    home_music = media_list(site["music"][:HOME_LIMIT]) if site["music"] else music
+    home_photos = photo_list(photos[:HOME_LIMIT])
     home = (
         still("/images/sea.jpg", "雾中平静的海面", "海雾")
         + f"<h1>{html.escape(site['title'])}</h1>\n"
         + f"<p class=\"lede\">{html.escape(site['description'])}</p>\n"
-        + "<section>\n<h2>文章</h2>\n"
-        + f"{articles}\n</section>\n"
-        + f"{catalog_section('视频', videos)}"
-        + f"{catalog_section('音乐', music)}"
-        + f"{catalog_section('摄影', photo_list(photos))}"
+        + catalog_section("文章", home_articles, more_link("/blog/", len(posts)), catalog=False)
+        + catalog_section("视频", home_videos, more_link("/videos/", len(site["videos"])))
+        + catalog_section("音乐", home_music, more_link("/music/", len(site["music"])))
+        + catalog_section("摄影", home_photos, more_link("/photography/", len(photos)))
     )
     page_count = max(1, (len(photos) + PHOTO_PAGE_SIZE - 1) // PHOTO_PAGE_SIZE)
     write_page("index.html", render_page(site, site["title"], home, "home"))

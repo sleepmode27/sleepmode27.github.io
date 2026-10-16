@@ -298,6 +298,16 @@ article time {
   margin-top: 4.5rem;
 }
 
+.more {
+  margin: 0.2rem 0 0;
+  font-size: 13px;
+  letter-spacing: 0.12em;
+}
+
+.more a {
+  text-decoration: none;
+}
+
 article time {
   margin-bottom: 0.15rem;
 }

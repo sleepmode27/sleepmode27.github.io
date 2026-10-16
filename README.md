@@ -53,7 +53,7 @@ tags: 随笔, 记录
 
 `name`、`src`、`summary` 必填。`src` 写成 `/images/<文件名>`，文件要真实存在。`place` 和 `date` 可以省略。`date` 用 `YYYY` 或 `YYYY-MM-DD`；没有可靠的拍摄时间就留空，页面上不会出现「拍摄时间」。
 
-摄影页每页 6 张，分页在标题下面和画廊下面各有一处。第一页是 `/photography/`，之后是 `/photography/page/2/`。不足 6 张时不显示分页。首页的摄影栏目用和视频、音乐一样的列表，点名字进入对应的那一页。首页顶部的大图仍是 `/images/sea.jpg`，换这张文件就会换掉首页。
+摄影页按拍摄时间从新到旧排列，每页 6 张。第一页是 `/photography/`，第 7 张起在 `/photography/page/2/`，分页在标题下面。没有日期的照片排在最后。首页每个栏目只放最新 3 条；超过 3 条时，列表下面有「其余」，点进去就是对应栏目页。首页顶部的大图仍是 `/images/sea.jpg`。
 
 ## 增加一个视频
 
@@ -64,6 +64,7 @@ tags: 随笔, 记录
   "slug": "guang",
   "name": "光",
   "summary": "一段简介",
+  "date": "2025-02-11",
   "watch": "https://www.bilibili.com/video/BV1RPNqeYEeD/",
   "tags": [
     {"name": "musician", "value": "haruka nakamura"},
@@ -72,7 +73,7 @@ tags: 随笔, 记录
 }
 ```
 
-`slug` 用英文和数字，地址是 `/videos/guang/`。列表和首页只显示标题、简介和标签。点进详情后，标题上方才出现播放器，标题本身是纯文字。
+`slug` 用英文和数字，地址是 `/videos/guang/`。`date` 可以不写，格式与照片相同。写了以后首页会按日期取最新 3 条，列表里也会显示。列表不放播放器，点进详情后才出现，标题是纯文字。
 
 ## 增加一首音乐
 
@@ -83,6 +84,7 @@ tags: 随笔, 记录
   "slug": "guang",
   "name": "光",
   "summary": "一段简介",
+  "date": "2014-12-24",
   "listen": "https://music.apple.com/jp/album/%E5%85%89-feat-cantus/1512512531?i=1512512551",
   "tags": [
     {"name": "musician", "value": "haruka nakamura"}
@@ -90,7 +92,7 @@ tags: 随笔, 记录
 }
 ```
 
-地址是 `/music/guang/`。列表和首页同样只显示标题、简介和标签。详情页把主机换成 `embed.music.apple.com`，嵌入官方播放器。未订阅的听众听到的是试听。
+地址是 `/music/guang/`。`date` 同样可选。列表不放播放器。详情页把主机换成 `embed.music.apple.com`，嵌入官方播放器。未订阅的听众听到的是试听。
 
 ## 挂载一个网页子项目
 
