@@ -19,12 +19,34 @@ content/posts/2026-10-16-hello.md
 title: 开始
 date: 2026-10-16
 summary: 一句话介绍
+tags: 随笔, 记录
 ---
 
 正文。
 ```
 
-`title`、`date`、`summary` 都要写。`date` 使用 `YYYY-MM-DD`。提交并推送到 `main` 后，Actions 会重新发布。
+`title`、`date`、`summary` 都要写。`date` 使用 `YYYY-MM-DD`。`tags` 用逗号分隔，列表和文章页都会显示简介和这些标签。提交并推送到 `main` 后，Actions 会重新发布。
+
+## 视频、音乐和 works
+
+`site.json` 里分开写 `videos`、`music` 和 `projects`。
+
+视频页只放标题、简介和标签，不嵌入播放器。标题在详情页链到外部观看地址。
+
+```json
+{
+  "slug": "guang",
+  "name": "光",
+  "summary": "一段简介",
+  "watch": "https://www.bilibili.com/video/BV1RPNqeYEeD/",
+  "tags": [
+    {"name": "musician", "value": "haruka nakamura"},
+    {"name": "流派", "value": "现代古典"}
+  ]
+}
+```
+
+地址是 `/videos/guang/`。音乐用同样的字段，外链键名是 `listen`，地址在 `/music/<slug>/`。`projects` 出现在 `/works/`，用来放开发项目。
 
 ## 以后把文章拆成独立仓库
 

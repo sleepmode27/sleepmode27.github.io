@@ -68,11 +68,16 @@ def parse_post(path):
     if not SLUG.match(slug):
         fail(f"{path.name} 的文件名不能作为 URL")
 
+    tags = []
+    if meta.get("tags"):
+        tags = [part.strip() for part in meta["tags"].split(",") if part.strip()]
+
     body = markdown.markdown(matched.group(2), extensions=["extra"])
     return {
         "title": meta["title"],
         "date": meta["date"],
         "summary": meta["summary"],
+        "tags": tags,
         "slug": slug,
         "html": body,
         "href": f"/blog/{slug}/",
@@ -108,14 +113,77 @@ def load_site():
                 fail(f"项目条目缺少 {key}")
         if not PROJECT_HREF.match(project["href"]):
             fail(f"项目链接需要是 /projects/<name>/ ：{project['href']}")
-    videos = site.get("videos") or []
-    if not isinstance(videos, list):
-        fail("site.json 的 videos 需要是数组")
-    for video in videos:
-        for key in ("name", "description", "href"):
-            if not video.get(key):
-                fail(f"视频条目缺少 {key}")
+    site["videos"] = load_media(site.get("videos") or [], "videos", "watch", required_link=True)
+    site["music"] = load_media(site.get("music") or [], "music", "listen", required_link=False)
     return site
+
+
+def load_media(raw, key, link_key, required_link):
+    if not isinstance(raw, list):
+        fail(f"site.json 的 {key} 需要是数组")
+    entries = []
+    seen = set()
+    for item in raw:
+        if not isinstance(item, dict):
+            fail(f"{key} 的条目需要是对象")
+        for field in ("slug", "name", "summary"):
+            if not str(item.get(field) or "").strip():
+                fail(f"{key} 条目缺少 {field}")
+        slug = item["slug"].strip()
+        if not SLUG.match(slug):
+            fail(f"{key} 的 slug 不能作为 URL：{slug}")
+        if slug in seen:
+            fail(f"{key} 路径重复：/{key}/{slug}/")
+        seen.add(slug)
+        link = str(item.get(link_key) or "").strip()
+        if required_link and not link:
+            fail(f"{key} 条目缺少 {link_key}")
+        if link and not link.startswith(("https://", "http://")):
+            fail(f"{key} 的链接需要是 http(s)：{link}")
+        tags = item.get("tags") or []
+        if not isinstance(tags, list):
+            fail(f"{key} 的 tags 需要是数组")
+        parsed_tags = []
+        for tag in tags:
+            if not isinstance(tag, dict):
+                fail(f"{key} 的 tag 需要包含 name 和 value")
+            name = str(tag.get("name") or "").strip()
+            value = str(tag.get("value") or "").strip()
+            if not name or not value:
+                fail(f"{key} 的 tag 需要包含 name 和 value")
+            parsed_tags.append({"name": name, "value": value})
+        entries.append(
+            {
+                "slug": slug,
+                "name": item["name"].strip(),
+                "summary": item["summary"].strip(),
+                "link": link,
+                "tags": parsed_tags,
+                "href": f"/{key}/{slug}/",
+            }
+        )
+    return entries
+
+
+def text_tags(tags):
+    if not tags:
+        return ""
+    items = [f'<li class="tag">{html.escape(tag)}</li>' for tag in tags]
+    return '<ul class="tags">' + "".join(items) + "</ul>"
+
+
+def pair_tags(tags):
+    if not tags:
+        return ""
+    items = []
+    for tag in tags:
+        items.append(
+            '<li class="tag">'
+            f'<span class="tag-name">{html.escape(tag["name"])}</span>'
+            f'{html.escape(tag["value"])}'
+            "</li>"
+        )
+    return '<ul class="tags">' + "".join(items) + "</ul>"
 
 
 def post_list(posts):
@@ -128,34 +196,33 @@ def post_list(posts):
             f'<time datetime="{html.escape(post["date"])}">{html.escape(post["date"])}</time>'
             f'<a class="entry" href="{html.escape(post["href"])}">{html.escape(post["title"])}</a>'
             f'<p class="summary">{html.escape(post["summary"])}</p>'
+            f"{text_tags(post['tags'])}"
             "</li>"
         )
     return '<ul class="list">\n' + "\n".join(items) + "\n</ul>"
 
 
-def videos_section(site):
-    videos = site.get("videos") or []
-    if not videos:
-        return ""
+def media_list(entries):
     items = []
-    for video in videos:
+    for entry in entries:
         items.append(
             "<li>"
-            f'<a class="entry" href="{html.escape(video["href"])}">{html.escape(video["name"])}</a>'
-            f'<p class="summary">{html.escape(video["description"])}</p>'
+            f'<a class="entry" href="{html.escape(entry["href"])}">{html.escape(entry["name"])}</a>'
+            f'<p class="summary">{html.escape(entry["summary"])}</p>'
+            f"{pair_tags(entry['tags'])}"
             "</li>"
         )
-    return (
-        '<section class="listening">\n<h2>视听</h2>\n<ul class="list">\n'
-        + "\n".join(items)
-        + "\n</ul>\n</section>\n"
-    )
+    return '<ul class="list">\n' + "\n".join(items) + "\n</ul>"
 
 
-def projects_section(site):
+def catalog_section(title, body):
+    return f'<section class="catalog">\n<h2>{html.escape(title)}</h2>\n{body}\n</section>\n'
+
+
+def projects_list(site):
     projects = site["projects"]
     if not projects:
-        return ""
+        return '<p class="empty">还没有作品。</p>'
     items = []
     for project in projects:
         items.append(
@@ -167,10 +234,19 @@ def projects_section(site):
             f'<p class="summary">{html.escape(project["description"])}</p>'
             "</li>"
         )
+    return '<ul class="list">\n' + "\n".join(items) + "\n</ul>"
+
+
+def media_page(entry):
+    title = html.escape(entry["name"])
+    if entry["link"]:
+        title = f'<a class="watch" href="{html.escape(entry["link"])}">{title}</a>'
     return (
-        '<section class="projects">\n<h2>项目</h2>\n<ul class="list">\n'
-        + "\n".join(items)
-        + "\n</ul>\n</section>"
+        '<article class="piece">\n'
+        f"<h1>{title}</h1>\n"
+        f"{pair_tags(entry['tags'])}\n"
+        f'<p class="lede">{html.escape(entry["summary"])}</p>\n'
+        "</article>"
     )
 
 
@@ -185,6 +261,9 @@ def render_page(site, page_title, content, current):
             "site_title": html.escape(site["title"]),
             "home_current": ' aria-current="page"' if current == "home" else "",
             "blog_current": ' aria-current="page"' if current == "blog" else "",
+            "videos_current": ' aria-current="page"' if current == "videos" else "",
+            "music_current": ' aria-current="page"' if current == "music" else "",
+            "works_current": ' aria-current="page"' if current == "works" else "",
             "content": content,
         },
     )
@@ -331,22 +410,42 @@ def build():
     DIST.mkdir()
 
     articles = post_list(posts)
+    videos = media_list(site["videos"]) if site["videos"] else '<p class="empty">还没有视频。</p>'
+    music = media_list(site["music"]) if site["music"] else '<p class="empty">还没有收入音乐。</p>'
+    works = projects_list(site)
     home = (
         f"<h1>{html.escape(site['title'])}</h1>\n"
         f"<p class=\"lede\">{html.escape(site['description'])}</p>\n"
         "<section>\n<h2>文章</h2>\n"
         f"{articles}\n</section>\n"
-        f"{videos_section(site)}"
-        f"{projects_section(site)}"
+        f"{catalog_section('视频', videos)}"
+        f"{catalog_section('音乐', music)}"
+        f"{catalog_section('works', works)}"
     )
     write_page("index.html", render_page(site, site["title"], home, "home"))
     write_page("blog/index.html", render_page(site, "文章", f"<h1>文章</h1>\n{articles}", "blog"))
+    write_page("videos/index.html", render_page(site, "视频", f"<h1>视频</h1>\n{videos}", "videos"))
+    write_page("music/index.html", render_page(site, "音乐", f"<h1>音乐</h1>\n{music}", "music"))
+    write_page("works/index.html", render_page(site, "works", f"<h1>works</h1>\n{works}", "works"))
+
+    for entry in site["videos"]:
+        write_page(
+            f"videos/{entry['slug']}/index.html",
+            render_page(site, entry["name"], media_page(entry), "videos"),
+        )
+    for entry in site["music"]:
+        write_page(
+            f"music/{entry['slug']}/index.html",
+            render_page(site, entry["name"], media_page(entry), "music"),
+        )
 
     for post in posts:
         article = (
             "<article>\n"
             f"<h1>{html.escape(post['title'])}</h1>\n"
             f"<time datetime=\"{html.escape(post['date'])}\">{html.escape(post['date'])}</time>\n"
+            f"{text_tags(post['tags'])}\n"
+            f"<p class=\"lede\">{html.escape(post['summary'])}</p>\n"
             f"<div class=\"content\">\n{post['html']}\n</div>\n"
             "</article>"
         )

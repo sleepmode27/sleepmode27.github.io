@@ -10,9 +10,16 @@
   ],
   "videos": [
     {
+      "slug": "guang",
       "name": "光",
-      "description": "haruka nakamura PIANO ENSEMBLE feat. CANTUS · Official MV · 3:45",
-      "href": "/projects/media/#guang"
+      "summary": "haruka nakamura 与钢琴合奏、合唱团 CANTUS 的官方影像。钢琴和人声叠在同一首曲子里，时长 3:45。",
+      "watch": "https://www.bilibili.com/video/BV1RPNqeYEeD/",
+      "tags": [
+        {"name": "musician", "value": "haruka nakamura"},
+        {"name": "流派", "value": "现代古典"},
+        {"name": "ensemble", "value": "CANTUS"}
+      ]
     }
-  ]
+  ],
+  "music": []
 }

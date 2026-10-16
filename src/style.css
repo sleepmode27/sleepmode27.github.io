@@ -59,7 +59,8 @@ a:focus-visible {
 
 nav {
   display: flex;
-  gap: 1.6rem;
+  flex-wrap: wrap;
+  gap: 0.8rem 1.6rem;
 }
 
 nav a {
@@ -105,7 +106,7 @@ h2 {
   list-style: none;
 }
 
-.list li {
+.list > li {
   padding: 1.45rem 0;
   border-bottom: 1px solid var(--line);
 }
@@ -150,13 +151,51 @@ article time {
   letter-spacing: 0.04em;
 }
 
-.listening,
-.projects {
+.tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.35rem 1.15rem;
+  margin: 0.7rem 0 0;
+  padding: 0;
+  list-style: none;
+}
+
+.tag {
+  color: var(--muted);
+  font-size: 0.75rem;
+  letter-spacing: 0.08em;
+}
+
+.tag-name {
+  margin-right: 0.4rem;
+  letter-spacing: 0.14em;
+}
+
+.catalog {
   margin-top: 4.5rem;
 }
 
 article time {
-  margin-bottom: 1.6rem;
+  margin-bottom: 0.15rem;
+}
+
+article .lede {
+  margin-top: 1.1rem;
+  margin-bottom: 2rem;
+}
+
+h1 a.watch {
+  color: inherit;
+  text-decoration: none;
+  transition: opacity 0.25s ease;
+}
+
+h1 a.watch:hover {
+  opacity: 0.4;
+}
+
+h1 a.watch::after {
+  content: " →";
 }
 
 .content h2,
