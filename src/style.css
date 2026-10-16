@@ -47,11 +47,14 @@ a:focus-visible {
   gap: 2rem;
   margin: 0 -2.5rem 0;
   padding: 1.15rem 2.5rem;
-  background: #fff;
+  background: transparent;
 }
 
 .site-title,
 nav a {
+  color: transparent;
+  -webkit-text-fill-color: transparent;
+  -webkit-text-stroke: 0.7px #161616;
   font-size: 14px;
   font-weight: 400;
   letter-spacing: 1.7px;
@@ -65,12 +68,13 @@ nav {
   gap: 0.35rem 1.15rem;
 }
 
-nav a {
-  color: var(--text);
+nav a,
+.site-title {
   transition: opacity 0.25s ease;
 }
 
-nav a:hover {
+nav a:hover,
+.site-title:hover {
   opacity: 0.4;
 }
 

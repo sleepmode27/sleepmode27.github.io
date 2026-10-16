@@ -284,11 +284,10 @@ def render_page(site, page_title, content, current):
             "title": html.escape(document_title),
             "description": html.escape(site["description"]),
             "site_title": html.escape(site["title"]),
-            "home_current": ' aria-current="page"' if current == "home" else "",
+            "photography_current": ' aria-current="page"' if current == "photography" else "",
             "blog_current": ' aria-current="page"' if current == "blog" else "",
             "videos_current": ' aria-current="page"' if current == "videos" else "",
             "music_current": ' aria-current="page"' if current == "music" else "",
-            "works_current": ' aria-current="page"' if current == "works" else "",
             "content": content,
         },
     )
@@ -448,7 +447,12 @@ def build():
         + f"{catalog_section('音乐', music)}"
         + f"{catalog_section('works', works)}"
     )
+    photos = (
+        still("/images/sea.jpg", "雾中平静的海面", "海雾")
+        + still("/images/forest.jpg", "雾里的针叶树", "针叶")
+    )
     write_page("index.html", render_page(site, site["title"], home, "home"))
+    write_page("photography/index.html", render_page(site, "photography", photos, "photography"))
     write_page("blog/index.html", render_page(site, "文章", f"<h1>文章</h1>\n{articles}", "blog"))
     write_page("videos/index.html", render_page(site, "视频", f"<h1>视频</h1>\n{videos}", "videos"))
     write_page("music/index.html", render_page(site, "音乐", f"<h1>音乐</h1>\n{music}", "music"))
