@@ -78,22 +78,22 @@ tags: 随笔, 记录
 
 ## 增加一首音乐
 
-在 `site.json` 的 `music` 里加一条。`listen` 填 Apple Music 的公开地址，主机必须是 `music.apple.com`。
+在 `site.json` 的 `music` 里加一条。`listen` 填网易云歌曲页，形如 `https://music.163.com/song?id=<数字>`。详情页嵌入网易云播放条，下面再放一条「在网易云音乐收听」。
 
 ```json
 {
   "slug": "guang",
-  "name": "光",
+  "name": "Light song",
   "summary": "一段简介",
-  "date": "2014-12-24",
-  "listen": "https://music.apple.com/jp/album/%E5%85%89-feat-cantus/1512512531?i=1512512551",
+  "date": "2024-06-28",
+  "listen": "https://music.163.com/song?id=2600522744",
   "tags": [
-    {"name": "音乐人", "value": "haruka nakamura"}
+    {"name": "音乐人", "value": "中村遥"}
   ]
 }
 ```
 
-地址是 `/music/guang/`。`date` 同样可选。列表不放播放器。详情页把主机换成 `embed.music.apple.com`，嵌入官方播放器。未订阅的听众听到的是试听。
+地址是 `/music/guang/`。`date` 可以不写。列表不放播放器。
 
 ## 挂载一个网页子项目
 

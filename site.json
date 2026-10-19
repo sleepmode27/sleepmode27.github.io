@@ -25,14 +25,14 @@
   "music": [
     {
       "slug": "guang",
-      "name": "光",
-      "summary": "haruka nakamura 与合唱团 CANTUS 的录音，收在《音楽のある風景》。",
-      "date": "2014-12-24",
-      "listen": "https://music.apple.com/jp/album/%E5%85%89-feat-cantus/1512512531?i=1512512551",
+      "name": "Light song",
+      "summary": "中村遥与 urara 的录音，收在剧场版动画《蓦然回首》原声带。",
+      "date": "2024-06-28",
+      "listen": "https://music.163.com/song?id=2600522744",
       "tags": [
-        {"name": "音乐人", "value": "haruka nakamura"},
-        {"name": "流派", "value": "现代古典"},
-        {"name": "合奏", "value": "CANTUS"}
+        {"name": "音乐人", "value": "中村遥"},
+        {"name": "流派", "value": "原声"},
+        {"name": "演唱", "value": "urara"}
       ]
     }
   ],

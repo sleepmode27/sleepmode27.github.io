@@ -336,11 +336,14 @@ article time {
   border: 0;
 }
 
-.player-audio {
-  height: 175px;
-  max-width: 42rem;
+.player-netease {
+  height: 86px;
   aspect-ratio: auto;
   background: transparent;
+}
+
+.player-netease iframe {
+  height: 86px;
 }
 
 .catalog {

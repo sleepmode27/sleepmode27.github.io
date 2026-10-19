@@ -26,7 +26,7 @@ DATE = re.compile(r"^\d{4}-\d{2}-\d{2}$")
 PLACEHOLDER = re.compile(r"\{\{([a-z_]+)\}\}")
 PROJECT_HREF = re.compile(r"^/projects/([A-Za-z0-9][A-Za-z0-9_-]*)/$")
 BVID = re.compile(r"BV[0-9A-Za-z]+")
-APPLE_MUSIC = re.compile(r"^https://music\.apple\.com(/[a-z]{2}/[A-Za-z0-9%._~:/?#\[\]@!$&'()*+,;=-]+)$")
+NETEASE_SONG = re.compile(r"^https://music\.163\.com/(?:#/)?song\?id=(\d+)$")
 PHOTO_SRC = re.compile(r"^/images/[A-Za-z0-9][A-Za-z0-9._-]*$")
 PHOTO_DATE = re.compile(r"^\d{4}(-\d{2}-\d{2})?$")
 PAGE_SIZE = 6
@@ -180,8 +180,8 @@ def load_media(raw, key, link_key, required_link):
             fail(f"{key} 条目缺少 {link_key}")
         if link and not link.startswith(("https://", "http://")):
             fail(f"{key} 的链接需要是 http(s)：{link}")
-        if key == "music" and link and not APPLE_MUSIC.match(link):
-            fail(f"音乐的 listen 需要是 https://music.apple.com/ 地址：{link}")
+        if key == "music" and not NETEASE_SONG.match(link):
+            fail(f"音乐的 listen 需要是 https://music.163.com/song?id=<数字> ：{link}")
         date = str(item.get("date") or "").strip()
         if date and not PHOTO_DATE.match(date):
             fail(f"{key} 的 date 需要是 YYYY 或 YYYY-MM-DD ：{date}")
@@ -464,19 +464,19 @@ def video_player(entry):
 
 
 def music_player(entry):
-    matched = APPLE_MUSIC.match(entry["link"] or "")
+    matched = NETEASE_SONG.match(entry["link"])
     if not matched:
         return ""
-    src = "https://embed.music.apple.com" + matched.group(1)
+    src = (
+        "https://music.163.com/outchain/player"
+        f"?type=2&id={matched.group(1)}&auto=0&height=66"
+    )
     title = html.escape(entry["name"])
     return (
-        '<div class="player player-audio">'
+        '<div class="player player-netease">'
         f'<iframe src="{html.escape(src)}" title="{title}" '
-        'allow="autoplay *; encrypted-media *; fullscreen *" '
-        'sandbox="allow-forms allow-popups allow-same-origin allow-scripts '
-        'allow-storage-access-by-user-activation allow-top-navigation-by-user-activation">'
-        "</iframe>"
-        "</div>"
+        'allow="autoplay; encrypted-media"></iframe>'
+        "</div>\n"
     )
 
 
@@ -492,6 +492,11 @@ def media_page(entry, kind):
         follow = (
             f'<p class="more"><a href="{html.escape(entry["link"])}">'
             "在哔哩哔哩观看</a></p>\n"
+        )
+    elif kind == "music" and entry.get("link"):
+        follow = (
+            f'<p class="more"><a href="{html.escape(entry["link"])}">'
+            "在网易云音乐收听</a></p>\n"
         )
     return (
         '<article class="piece">\n'
