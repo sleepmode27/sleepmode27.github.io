@@ -716,6 +716,25 @@ def build():
             f"music/{entry['slug']}/index.html",
             render_page(site, entry["name"], media_page(entry, "music"), "music"),
         )
+    if not (DIST / "music" / "guang" / "index.html").exists():
+        write_page(
+            "music/guang/index.html",
+            "<!DOCTYPE html>\n"
+            '<html lang="zh-CN">\n'
+            "<head>\n"
+            '  <meta charset="UTF-8" />\n'
+            "  <title>Light song · sleepmode27</title>\n"
+            '  <link rel="canonical" href="/music/light-song/" />\n'
+            '  <meta http-equiv="refresh" content="0; url=/music/light-song/" />\n'
+            '  <link rel="icon" href="/favicon.svg" type="image/svg+xml" />\n'
+            '  <link rel="icon" href="/favicon.ico" sizes="32x32" />\n'
+            '  <script>location.replace("/music/light-song/")</script>\n'
+            "</head>\n"
+            "<body>\n"
+            '  <p><a href="/music/light-song/">Light song</a></p>\n'
+            "</body>\n"
+            "</html>\n",
+        )
 
     for post in posts:
         article = (
@@ -739,6 +758,8 @@ def build():
     )
     write_page("404.html", render_page(site, "页面不存在", column(missing), ""))
     shutil.copyfile(SRC / "style.css", DIST / "style.css")
+    for name in ("favicon.svg", "favicon.ico"):
+        shutil.copyfile(SRC / name, DIST / name)
     images = SRC / "images"
     if images.is_dir():
         shutil.copytree(images, DIST / "images")

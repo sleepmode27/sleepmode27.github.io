@@ -82,7 +82,7 @@ tags: 随笔, 记录
 
 ```json
 {
-  "slug": "guang",
+  "slug": "light-song",
   "name": "Light song",
   "summary": "一段简介",
   "date": "2024-06-28",
@@ -93,7 +93,7 @@ tags: 随笔, 记录
 }
 ```
 
-地址是 `/music/guang/`。`date` 可以不写。列表不放播放器。
+地址是 `/music/light-song/`。`date` 可以不写。列表不放播放器。以前的 `/music/guang/` 会转到这个地址。
 
 ## 挂载一个网页子项目
 
